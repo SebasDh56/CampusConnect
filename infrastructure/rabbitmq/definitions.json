@@ -1,0 +1,118 @@
+{
+  "vhosts": [
+    {
+      "name": "/"
+    }
+  ],
+  "exchanges": [
+    {
+      "name": "campusconnect.events",
+      "vhost": "/",
+      "type": "topic",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "campusconnect.dead-letter",
+      "vhost": "/",
+      "type": "direct",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    }
+  ],
+  "queues": [
+    {
+      "name": "student.enrolled.queue",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-dead-letter-exchange": "campusconnect.dead-letter",
+        "x-dead-letter-routing-key": "dead-letter"
+      }
+    },
+    {
+      "name": "payment.confirmed.queue",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-dead-letter-exchange": "campusconnect.dead-letter",
+        "x-dead-letter-routing-key": "dead-letter"
+      }
+    },
+    {
+      "name": "attendance.recorded.queue",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-dead-letter-exchange": "campusconnect.dead-letter",
+        "x-dead-letter-routing-key": "dead-letter"
+      }
+    },
+    {
+      "name": "incident.reported.queue",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-dead-letter-exchange": "campusconnect.dead-letter",
+        "x-dead-letter-routing-key": "dead-letter"
+      }
+    },
+    {
+      "name": "campusconnect.dead-letter.queue",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    }
+  ],
+  "bindings": [
+    {
+      "source": "campusconnect.events",
+      "vhost": "/",
+      "destination": "student.enrolled.queue",
+      "destination_type": "queue",
+      "routing_key": "student.enrolled",
+      "arguments": {}
+    },
+    {
+      "source": "campusconnect.events",
+      "vhost": "/",
+      "destination": "payment.confirmed.queue",
+      "destination_type": "queue",
+      "routing_key": "payment.confirmed",
+      "arguments": {}
+    },
+    {
+      "source": "campusconnect.events",
+      "vhost": "/",
+      "destination": "attendance.recorded.queue",
+      "destination_type": "queue",
+      "routing_key": "attendance.recorded",
+      "arguments": {}
+    },
+    {
+      "source": "campusconnect.events",
+      "vhost": "/",
+      "destination": "incident.reported.queue",
+      "destination_type": "queue",
+      "routing_key": "incident.reported",
+      "arguments": {}
+    },
+    {
+      "source": "campusconnect.dead-letter",
+      "vhost": "/",
+      "destination": "campusconnect.dead-letter.queue",
+      "destination_type": "queue",
+      "routing_key": "dead-letter",
+      "arguments": {}
+    }
+  ]
+}

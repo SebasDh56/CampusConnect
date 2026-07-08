@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://campusconnect.local/contracts/events/student-enrolled.schema.json",
+  "title": "StudentEnrolled",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "eventId",
+    "eventType",
+    "occurredAt",
+    "correlationId"
+  ],
+  "properties": {
+    "eventId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "eventType": {
+      "type": "string",
+      "const": "StudentEnrolled"
+    },
+    "occurredAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "correlationId": {
+      "type": "string",
+      "format": "uuid"
+    }
+  }
+}

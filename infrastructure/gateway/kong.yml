@@ -1,0 +1,27 @@
+_format_version: "3.0"
+_transform: true
+
+services:
+  - name: academic-service
+    url: http://academic-service:8080
+    routes:
+      - name: academic-route
+        paths:
+          - /academic
+        strip_path: true
+
+  - name: payments-service
+    url: http://payments-service:8080
+    routes:
+      - name: payments-route
+        paths:
+          - /payments
+        strip_path: true
+
+  - name: wellbeing-service
+    url: http://wellbeing-service:8080
+    routes:
+      - name: wellbeing-route
+        paths:
+          - /wellbeing
+        strip_path: true

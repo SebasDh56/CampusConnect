@@ -1,0 +1,201 @@
+version: "3.9"
+
+services:
+  kong:
+    image: kong:3.7
+    container_name: campusconnect-kong
+    restart: unless-stopped
+    environment:
+      KONG_DATABASE: "off"
+      KONG_PROXY_ACCESS_LOG: /dev/stdout
+      KONG_ADMIN_ACCESS_LOG: /dev/stdout
+      KONG_PROXY_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_LISTEN: 0.0.0.0:8001
+    ports:
+      - "8000:8000"
+      - "8001:8001"
+    networks:
+      - campusconnect-network
+    healthcheck:
+      test: ["CMD", "kong", "health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    container_name: campusconnect-rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:-campusconnect}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:-campusconnect}
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    networks:
+      - campusconnect-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  academic-service:
+    build:
+      context: ./services/academic-service
+    container_name: campusconnect-academic-service
+    restart: unless-stopped
+    environment:
+      APP_ENV: ${APP_ENV:-local}
+      PORT: 8080
+      DATABASE_HOST: academic-db
+      DATABASE_PORT: 5432
+      DATABASE_NAME: ${ACADEMIC_DB_NAME:-academic_db}
+      DATABASE_USER: ${ACADEMIC_DB_USER:-academic_user}
+      DATABASE_PASSWORD: ${ACADEMIC_DB_PASSWORD:-academic_password}
+    ports:
+      - "8081:8080"
+    depends_on:
+      academic-db:
+        condition: service_healthy
+    networks:
+      - campusconnect-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:8080/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  academic-db:
+    image: postgres:16-alpine
+    container_name: campusconnect-academic-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${ACADEMIC_DB_NAME:-academic_db}
+      POSTGRES_USER: ${ACADEMIC_DB_USER:-academic_user}
+      POSTGRES_PASSWORD: ${ACADEMIC_DB_PASSWORD:-academic_password}
+    ports:
+      - "5433:5432"
+    volumes:
+      - academic-db-data:/var/lib/postgresql/data
+    networks:
+      - campusconnect-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  payments-service:
+    build:
+      context: ./services/payments-service
+    container_name: campusconnect-payments-service
+    restart: unless-stopped
+    environment:
+      APP_ENV: ${APP_ENV:-local}
+      PORT: 8080
+      DATABASE_HOST: payments-db
+      DATABASE_PORT: 5432
+      DATABASE_NAME: ${PAYMENTS_DB_NAME:-payments_db}
+      DATABASE_USER: ${PAYMENTS_DB_USER:-payments_user}
+      DATABASE_PASSWORD: ${PAYMENTS_DB_PASSWORD:-payments_password}
+    ports:
+      - "8082:8080"
+    depends_on:
+      payments-db:
+        condition: service_healthy
+    networks:
+      - campusconnect-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:8080/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  payments-db:
+    image: postgres:16-alpine
+    container_name: campusconnect-payments-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${PAYMENTS_DB_NAME:-payments_db}
+      POSTGRES_USER: ${PAYMENTS_DB_USER:-payments_user}
+      POSTGRES_PASSWORD: ${PAYMENTS_DB_PASSWORD:-payments_password}
+    ports:
+      - "5434:5432"
+    volumes:
+      - payments-db-data:/var/lib/postgresql/data
+    networks:
+      - campusconnect-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  wellbeing-service:
+    build:
+      context: ./services/wellbeing-service
+    container_name: campusconnect-wellbeing-service
+    restart: unless-stopped
+    environment:
+      APP_ENV: ${APP_ENV:-local}
+      PORT: 8080
+      DATABASE_HOST: wellbeing-db
+      DATABASE_PORT: 5432
+      DATABASE_NAME: ${WELLBEING_DB_NAME:-wellbeing_db}
+      DATABASE_USER: ${WELLBEING_DB_USER:-wellbeing_user}
+      DATABASE_PASSWORD: ${WELLBEING_DB_PASSWORD:-wellbeing_password}
+    ports:
+      - "8083:8080"
+    depends_on:
+      wellbeing-db:
+        condition: service_healthy
+    networks:
+      - campusconnect-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:8080/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  wellbeing-db:
+    image: postgres:16-alpine
+    container_name: campusconnect-wellbeing-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${WELLBEING_DB_NAME:-wellbeing_db}
+      POSTGRES_USER: ${WELLBEING_DB_USER:-wellbeing_user}
+      POSTGRES_PASSWORD: ${WELLBEING_DB_PASSWORD:-wellbeing_password}
+    ports:
+      - "5435:5432"
+    volumes:
+      - wellbeing-db-data:/var/lib/postgresql/data
+    networks:
+      - campusconnect-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+networks:
+  campusconnect-network:
+    name: campusconnect-network
+    driver: bridge
+
+volumes:
+  rabbitmq-data:
+  academic-db-data:
+  payments-db-data:
+  wellbeing-db-data:
