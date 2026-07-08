@@ -51,6 +51,7 @@ services:
       start_period: 30s
 
   academic-service:
+    image: campusconnect-academic-service:latest
     build:
       context: ./services/academic-service
     container_name: campusconnect-academic-service
@@ -100,6 +101,7 @@ services:
       start_period: 20s
 
   payments-service:
+    image: campusconnect-payments-service:latest
     build:
       context: ./services/payments-service
     container_name: campusconnect-payments-service
@@ -149,6 +151,7 @@ services:
       start_period: 20s
 
   wellbeing-service:
+    image: campusconnect-wellbeing-service:latest
     build:
       context: ./services/wellbeing-service
     container_name: campusconnect-wellbeing-service
