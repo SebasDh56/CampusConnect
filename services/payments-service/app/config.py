@@ -2,14 +2,14 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    service_name: str = "academic-service"
+    service_name: str = "payments-service"
     app_env: str = "local"
-    port: int = 3001
-    database_host: str = "academic-db"
+    port: int = 3002
+    database_host: str = "payments-db"
     database_port: int = 5432
-    database_name: str = "academic_db"
-    database_user: str = "academic_user"
-    database_password: str = "academic_password"
+    database_name: str = "payments_db"
+    database_user: str = "payments_user"
+    database_password: str = "payments_password"
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 

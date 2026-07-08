@@ -7,6 +7,7 @@ services:
     restart: unless-stopped
     environment:
       KONG_DATABASE: "off"
+      KONG_DECLARATIVE_CONFIG: /kong/declarative/kong.yml
       KONG_PROXY_ACCESS_LOG: /dev/stdout
       KONG_ADMIN_ACCESS_LOG: /dev/stdout
       KONG_PROXY_ERROR_LOG: /dev/stderr
@@ -15,6 +16,8 @@ services:
     ports:
       - "8000:8000"
       - "8001:8001"
+    volumes:
+      - ./infrastructure/gateway/kong.yml:/kong/declarative/kong.yml:ro
     networks:
       - campusconnect-network
     healthcheck:
@@ -36,6 +39,8 @@ services:
       - "15672:15672"
     volumes:
       - rabbitmq-data:/var/lib/rabbitmq
+      - ./infrastructure/rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
+      - ./infrastructure/rabbitmq/definitions.json:/etc/rabbitmq/definitions.json:ro
     networks:
       - campusconnect-network
     healthcheck:
@@ -52,21 +57,21 @@ services:
     restart: unless-stopped
     environment:
       APP_ENV: ${APP_ENV:-local}
-      PORT: 8080
+      PORT: 3001
       DATABASE_HOST: academic-db
       DATABASE_PORT: 5432
       DATABASE_NAME: ${ACADEMIC_DB_NAME:-academic_db}
       DATABASE_USER: ${ACADEMIC_DB_USER:-academic_user}
       DATABASE_PASSWORD: ${ACADEMIC_DB_PASSWORD:-academic_password}
     ports:
-      - "8081:8080"
+      - "3001:3001"
     depends_on:
       academic-db:
         condition: service_healthy
     networks:
       - campusconnect-network
     healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider http://localhost:8080/health || exit 1"]
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:3001/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -84,6 +89,7 @@ services:
       - "5433:5432"
     volumes:
       - academic-db-data:/var/lib/postgresql/data
+      - ./infrastructure/database/academic/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     networks:
       - campusconnect-network
     healthcheck:
@@ -100,21 +106,21 @@ services:
     restart: unless-stopped
     environment:
       APP_ENV: ${APP_ENV:-local}
-      PORT: 8080
+      PORT: 3002
       DATABASE_HOST: payments-db
       DATABASE_PORT: 5432
       DATABASE_NAME: ${PAYMENTS_DB_NAME:-payments_db}
       DATABASE_USER: ${PAYMENTS_DB_USER:-payments_user}
       DATABASE_PASSWORD: ${PAYMENTS_DB_PASSWORD:-payments_password}
     ports:
-      - "8082:8080"
+      - "3002:3002"
     depends_on:
       payments-db:
         condition: service_healthy
     networks:
       - campusconnect-network
     healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider http://localhost:8080/health || exit 1"]
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:3002/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -132,6 +138,7 @@ services:
       - "5434:5432"
     volumes:
       - payments-db-data:/var/lib/postgresql/data
+      - ./infrastructure/database/payments/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     networks:
       - campusconnect-network
     healthcheck:
@@ -148,21 +155,21 @@ services:
     restart: unless-stopped
     environment:
       APP_ENV: ${APP_ENV:-local}
-      PORT: 8080
+      PORT: 3003
       DATABASE_HOST: wellbeing-db
       DATABASE_PORT: 5432
       DATABASE_NAME: ${WELLBEING_DB_NAME:-wellbeing_db}
       DATABASE_USER: ${WELLBEING_DB_USER:-wellbeing_user}
       DATABASE_PASSWORD: ${WELLBEING_DB_PASSWORD:-wellbeing_password}
     ports:
-      - "8083:8080"
+      - "3003:3003"
     depends_on:
       wellbeing-db:
         condition: service_healthy
     networks:
       - campusconnect-network
     healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider http://localhost:8080/health || exit 1"]
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:3003/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -180,6 +187,7 @@ services:
       - "5435:5432"
     volumes:
       - wellbeing-db-data:/var/lib/postgresql/data
+      - ./infrastructure/database/wellbeing/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     networks:
       - campusconnect-network
     healthcheck:

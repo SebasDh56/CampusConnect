@@ -3,7 +3,7 @@ _transform: true
 
 services:
   - name: academic-service
-    url: http://academic-service:8080
+    url: http://academic-service:3001
     routes:
       - name: academic-route
         paths:
@@ -11,7 +11,7 @@ services:
         strip_path: true
 
   - name: payments-service
-    url: http://payments-service:8080
+    url: http://payments-service:3002
     routes:
       - name: payments-route
         paths:
@@ -19,7 +19,7 @@ services:
         strip_path: true
 
   - name: wellbeing-service
-    url: http://wellbeing-service:8080
+    url: http://wellbeing-service:3003
     routes:
       - name: wellbeing-route
         paths:
