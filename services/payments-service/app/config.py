@@ -10,6 +10,12 @@ class Settings(BaseSettings):
     database_name: str = "payments_db"
     database_user: str = "payments_user"
     database_password: str = "payments_password"
+    rabbitmq_host: str = "rabbitmq"
+    rabbitmq_port: int = 5672
+    rabbitmq_user: str = "campus_user"
+    rabbitmq_password: str = "campus_pass"
+    rabbitmq_vhost: str = "campusconnect"
+    rabbitmq_exchange: str = "campusconnect.events"
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 

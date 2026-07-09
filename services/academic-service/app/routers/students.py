@@ -1,10 +1,12 @@
-from uuid import UUID
+from uuid import UUID, uuid4
 
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from sqlalchemy.orm import Session
 
 from app import crud
 from app.database import get_db
+from app.event_factory import build_student_enrolled_event
+from app.event_publisher import publish_event
 from app.models import Student
 from app.schemas import StudentCreate, StudentResponse, StudentUpdate
 
@@ -19,12 +21,17 @@ def _get_student_or_404(student_id: UUID, db: Session) -> Student:
 
 
 @router.post("/students", response_model=StudentResponse, status_code=status.HTTP_201_CREATED)
-def create_student(payload: StudentCreate, db: Session = Depends(get_db)) -> Student:
+def create_student(request: Request, payload: StudentCreate, db: Session = Depends(get_db)) -> Student:
     try:
-        return crud.create_student(db, payload)
+        student = crud.create_student(db, payload)
     except crud.DuplicateDocumentNumberError as exc:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="document_number already exists") from exc
 
+    correlation_id = request.headers.get("X-Correlation-Id") or str(uuid4())
+    event = build_student_enrolled_event(student, correlation_id)
+    publish_event(event, "student.enrolled")
+
+    return student
 
 @router.get("/students", response_model=list[StudentResponse])
 def get_students(db: Session = Depends(get_db)) -> list[Student]:

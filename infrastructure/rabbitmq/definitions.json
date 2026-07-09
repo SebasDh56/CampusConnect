@@ -1,13 +1,30 @@
 {
   "vhosts": [
     {
-      "name": "/"
+      "name": "campusconnect"
+    }
+  ],
+  "users": [
+    {
+      "name": "campus_user",
+      "password_hash": "4ojC5QXS6pUylhUYY8RLDsH/FTTpd8kTKSiqjZBOvTMKBBNs",
+      "hashing_algorithm": "rabbit_password_hashing_sha256",
+      "tags": "administrator"
+    }
+  ],
+  "permissions": [
+    {
+      "user": "campus_user",
+      "vhost": "campusconnect",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
     }
   ],
   "exchanges": [
     {
       "name": "campusconnect.events",
-      "vhost": "/",
+      "vhost": "campusconnect",
       "type": "topic",
       "durable": true,
       "auto_delete": false,
@@ -16,7 +33,7 @@
     },
     {
       "name": "campusconnect.dead-letter",
-      "vhost": "/",
+      "vhost": "campusconnect",
       "type": "direct",
       "durable": true,
       "auto_delete": false,
@@ -27,7 +44,7 @@
   "queues": [
     {
       "name": "student.enrolled.queue",
-      "vhost": "/",
+      "vhost": "campusconnect",
       "durable": true,
       "auto_delete": false,
       "arguments": {
@@ -37,7 +54,7 @@
     },
     {
       "name": "payment.confirmed.queue",
-      "vhost": "/",
+      "vhost": "campusconnect",
       "durable": true,
       "auto_delete": false,
       "arguments": {
@@ -47,7 +64,7 @@
     },
     {
       "name": "attendance.recorded.queue",
-      "vhost": "/",
+      "vhost": "campusconnect",
       "durable": true,
       "auto_delete": false,
       "arguments": {
@@ -57,7 +74,7 @@
     },
     {
       "name": "incident.reported.queue",
-      "vhost": "/",
+      "vhost": "campusconnect",
       "durable": true,
       "auto_delete": false,
       "arguments": {
@@ -67,7 +84,7 @@
     },
     {
       "name": "campusconnect.dead-letter.queue",
-      "vhost": "/",
+      "vhost": "campusconnect",
       "durable": true,
       "auto_delete": false,
       "arguments": {}
@@ -76,7 +93,7 @@
   "bindings": [
     {
       "source": "campusconnect.events",
-      "vhost": "/",
+      "vhost": "campusconnect",
       "destination": "student.enrolled.queue",
       "destination_type": "queue",
       "routing_key": "student.enrolled",
@@ -84,7 +101,7 @@
     },
     {
       "source": "campusconnect.events",
-      "vhost": "/",
+      "vhost": "campusconnect",
       "destination": "payment.confirmed.queue",
       "destination_type": "queue",
       "routing_key": "payment.confirmed",
@@ -92,7 +109,7 @@
     },
     {
       "source": "campusconnect.events",
-      "vhost": "/",
+      "vhost": "campusconnect",
       "destination": "attendance.recorded.queue",
       "destination_type": "queue",
       "routing_key": "attendance.recorded",
@@ -100,7 +117,7 @@
     },
     {
       "source": "campusconnect.events",
-      "vhost": "/",
+      "vhost": "campusconnect",
       "destination": "incident.reported.queue",
       "destination_type": "queue",
       "routing_key": "incident.reported",
@@ -108,7 +125,7 @@
     },
     {
       "source": "campusconnect.dead-letter",
-      "vhost": "/",
+      "vhost": "campusconnect",
       "destination": "campusconnect.dead-letter.queue",
       "destination_type": "queue",
       "routing_key": "dead-letter",
