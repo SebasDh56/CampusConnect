@@ -12,12 +12,13 @@ class Attendance(Base):
 
     attendance_id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
     student_id: Mapped[str] = mapped_column(String(36), nullable=False, index=True)
-    school_id: Mapped[str | None] = mapped_column(String(36), nullable=True)
-    grade: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    school_id: Mapped[str] = mapped_column(String(36), nullable=False)
+    grade: Mapped[str] = mapped_column(String(50), nullable=False)
     record_date: Mapped[date] = mapped_column(Date, nullable=False)
     status: Mapped[str] = mapped_column(String(30), nullable=False)
-    recorded_by: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    recorded_by: Mapped[str] = mapped_column(String(100), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 
 class Incident(Base):
@@ -25,9 +26,10 @@ class Incident(Base):
 
     incident_id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
     student_id: Mapped[str] = mapped_column(String(36), nullable=False, index=True)
-    school_id: Mapped[str | None] = mapped_column(String(36), nullable=True)
+    school_id: Mapped[str] = mapped_column(String(36), nullable=False)
     incident_type: Mapped[str] = mapped_column(String(50), nullable=False)
-    severity: Mapped[str | None] = mapped_column(String(30), nullable=True)
-    description: Mapped[str | None] = mapped_column(Text, nullable=True)
-    reported_by: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    severity: Mapped[str] = mapped_column(String(30), nullable=False)
+    description: Mapped[str] = mapped_column(Text, nullable=False)
+    reported_by: Mapped[str] = mapped_column(String(100), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
