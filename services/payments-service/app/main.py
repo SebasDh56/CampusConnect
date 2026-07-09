@@ -1,12 +1,12 @@
 from fastapi import FastAPI
 
 from app.config import settings
-from app.database import Base, engine
+from app.database import init_db
 from app.health import router as health_router
 from app import models
-from app.routers import router as payments_router
+from app.routers.payments import router as payments_router
 
-Base.metadata.create_all(bind=engine)
+init_db()
 
 app = FastAPI(title=settings.service_name)
 app.include_router(health_router)
