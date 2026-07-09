@@ -1,10 +1,12 @@
-from uuid import UUID
+from uuid import UUID, uuid4
 
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from sqlalchemy.orm import Session
 
 from app import crud
 from app.database import get_db
+from app.event_factory import build_attendance_recorded_event
+from app.event_publisher import publish_event
 from app.models import Attendance
 from app.schemas import AttendanceCreate, AttendanceResponse, AttendanceUpdate
 
@@ -19,8 +21,12 @@ def _get_attendance_or_404(attendance_id: UUID, db: Session) -> Attendance:
 
 
 @router.post("/attendance", response_model=AttendanceResponse, status_code=status.HTTP_201_CREATED)
-def create_attendance(payload: AttendanceCreate, db: Session = Depends(get_db)) -> Attendance:
-    return crud.create_attendance(db, payload)
+def create_attendance(request: Request, payload: AttendanceCreate, db: Session = Depends(get_db)) -> Attendance:
+    attendance = crud.create_attendance(db, payload)
+    correlation_id = request.headers.get("X-Correlation-Id") or str(uuid4())
+    event = build_attendance_recorded_event(attendance, correlation_id)
+    publish_event(event, "attendance.recorded")
+    return attendance
 
 
 @router.get("/attendance", response_model=list[AttendanceResponse])

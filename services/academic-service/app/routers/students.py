@@ -33,6 +33,7 @@ def create_student(request: Request, payload: StudentCreate, db: Session = Depen
 
     return student
 
+
 @router.get("/students", response_model=list[StudentResponse])
 def get_students(db: Session = Depends(get_db)) -> list[Student]:
     return crud.get_students(db)

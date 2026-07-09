@@ -200,6 +200,122 @@ services:
       retries: 5
       start_period: 20s
 
+  notifications-service:
+    image: campusconnect-notifications-service:latest
+    build:
+      context: ./services/notifications-service
+    container_name: campusconnect-notifications-service
+    restart: unless-stopped
+    environment:
+      APP_ENV: ${APP_ENV:-local}
+      PORT: 3004
+      DATABASE_HOST: notifications-db
+      DATABASE_PORT: 5432
+      DATABASE_NAME: ${NOTIFICATIONS_DB_NAME:-notifications_db}
+      DATABASE_USER: ${NOTIFICATIONS_DB_USER:-notifications_user}
+      DATABASE_PASSWORD: ${NOTIFICATIONS_DB_PASSWORD:-notifications_password}
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: campus_user
+      RABBITMQ_PASSWORD: campus_pass
+      RABBITMQ_VHOST: campusconnect
+      RABBITMQ_EXCHANGE: campusconnect.events
+      RABBITMQ_QUEUE: notifications.events.queue
+    ports:
+      - "3004:3004"
+    depends_on:
+      notifications-db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - campusconnect-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:3004/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  notifications-db:
+    image: postgres:16-alpine
+    container_name: campusconnect-notifications-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${NOTIFICATIONS_DB_NAME:-notifications_db}
+      POSTGRES_USER: ${NOTIFICATIONS_DB_USER:-notifications_user}
+      POSTGRES_PASSWORD: ${NOTIFICATIONS_DB_PASSWORD:-notifications_password}
+    ports:
+      - "5436:5432"
+    volumes:
+      - notifications-db-data:/var/lib/postgresql/data
+    networks:
+      - campusconnect-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  analytics-service:
+    image: campusconnect-analytics-service:latest
+    build:
+      context: ./services/analytics-service
+    container_name: campusconnect-analytics-service
+    restart: unless-stopped
+    environment:
+      APP_ENV: ${APP_ENV:-local}
+      PORT: 3005
+      DATABASE_HOST: analytics-db
+      DATABASE_PORT: 5432
+      DATABASE_NAME: ${ANALYTICS_DB_NAME:-analytics_db}
+      DATABASE_USER: ${ANALYTICS_DB_USER:-analytics_user}
+      DATABASE_PASSWORD: ${ANALYTICS_DB_PASSWORD:-analytics_password}
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: campus_user
+      RABBITMQ_PASSWORD: campus_pass
+      RABBITMQ_VHOST: campusconnect
+      RABBITMQ_EXCHANGE: campusconnect.events
+      RABBITMQ_QUEUE: analytics.events.queue
+    ports:
+      - "3005:3005"
+    depends_on:
+      analytics-db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - campusconnect-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:3005/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  analytics-db:
+    image: postgres:16-alpine
+    container_name: campusconnect-analytics-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${ANALYTICS_DB_NAME:-analytics_db}
+      POSTGRES_USER: ${ANALYTICS_DB_USER:-analytics_user}
+      POSTGRES_PASSWORD: ${ANALYTICS_DB_PASSWORD:-analytics_password}
+    ports:
+      - "5437:5432"
+    volumes:
+      - analytics-db-data:/var/lib/postgresql/data
+    networks:
+      - campusconnect-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
 networks:
   campusconnect-network:
     name: campusconnect-network
@@ -210,3 +326,5 @@ volumes:
   academic-db-data:
   payments-db-data:
   wellbeing-db-data:
+  notifications-db-data:
+  analytics-db-data:

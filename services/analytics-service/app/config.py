@@ -2,20 +2,21 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    service_name: str = "wellbeing-service"
+    service_name: str = "analytics-service"
     app_env: str = "local"
-    port: int = 3003
-    database_host: str = "wellbeing-db"
+    port: int = 3005
+    database_host: str = "analytics-db"
     database_port: int = 5432
-    database_name: str = "wellbeing_db"
-    database_user: str = "wellbeing_user"
-    database_password: str = "wellbeing_password"
+    database_name: str = "analytics_db"
+    database_user: str = "analytics_user"
+    database_password: str = "analytics_password"
     rabbitmq_host: str = "rabbitmq"
     rabbitmq_port: int = 5672
     rabbitmq_user: str = "campus_user"
     rabbitmq_password: str = "campus_pass"
     rabbitmq_vhost: str = "campusconnect"
     rabbitmq_exchange: str = "campusconnect.events"
+    rabbitmq_queue: str = "analytics.events.queue"
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 

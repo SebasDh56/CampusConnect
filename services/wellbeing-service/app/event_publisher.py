@@ -9,7 +9,6 @@ logger = logging.getLogger(__name__)
 
 
 def publish_event(event: dict, routing_key: str) -> bool:
-    body = json.dumps(event).encode("utf-8")
     connection = None
 
     try:
@@ -30,7 +29,7 @@ def publish_event(event: dict, routing_key: str) -> bool:
         channel.basic_publish(
             exchange=settings.rabbitmq_exchange,
             routing_key=routing_key,
-            body=body,
+            body=json.dumps(event).encode("utf-8"),
             properties=pika.BasicProperties(
                 content_type="application/json",
                 delivery_mode=2,

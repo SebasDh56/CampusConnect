@@ -1,10 +1,12 @@
-from uuid import UUID
+from uuid import UUID, uuid4
 
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from sqlalchemy.orm import Session
 
 from app import crud
 from app.database import get_db
+from app.event_factory import build_incident_reported_event
+from app.event_publisher import publish_event
 from app.models import Incident
 from app.schemas import IncidentCreate, IncidentResponse, IncidentUpdate
 
@@ -19,8 +21,12 @@ def _get_incident_or_404(incident_id: UUID, db: Session) -> Incident:
 
 
 @router.post("/incidents", response_model=IncidentResponse, status_code=status.HTTP_201_CREATED)
-def create_incident(payload: IncidentCreate, db: Session = Depends(get_db)) -> Incident:
-    return crud.create_incident(db, payload)
+def create_incident(request: Request, payload: IncidentCreate, db: Session = Depends(get_db)) -> Incident:
+    incident = crud.create_incident(db, payload)
+    correlation_id = request.headers.get("X-Correlation-Id") or str(uuid4())
+    event = build_incident_reported_event(incident, correlation_id)
+    publish_event(event, "incident.reported")
+    return incident
 
 
 @router.get("/incidents", response_model=list[IncidentResponse])
