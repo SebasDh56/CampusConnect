@@ -1,91 +1,171 @@
 # CampusConnect 360
 
-CampusConnect 360 es un ecosistema de integracion para una red de colegios. En la Fase 1 el proyecto contiene solamente infraestructura base y microservicios minimos de salud tecnica.
+CampusConnect 360 es un ecosistema local de integracion para una red de colegios. Esta version esta preparada para ejecutarse con Docker Compose e incluye frontend, API Gateway, microservicios, bases PostgreSQL independientes y RabbitMQ.
 
-No incluye frontend, CRUD, autenticacion, productores, consumidores ni logica de negocio.
+## Prerrequisitos
 
-## Arquitectura
+- Git.
+- Docker Desktop o Docker Engine con Docker Compose v2.
 
-La arquitectura de Fase 1 usa:
+Node.js solo es necesario si quieres ejecutar o validar el frontend fuera de Docker.
 
-- Kong en modo DB-less como API Gateway.
-- FastAPI para los servicios base.
-- PostgreSQL independiente por servicio.
-- RabbitMQ Management preparado con definiciones declarativas.
-- Docker Compose como orquestador local.
-- Contratos JSON Schema para eventos documentados, sin implementacion de eventos.
+## Instalacion rapida
 
-## Servicios
+```powershell
+git clone <repositorio>
+cd CampusConnect
+cp .env.example .env
+docker compose up --build
+```
 
-| Componente | Puerto host | Puerto interno | Descripcion |
-|---|---:|---:|---|
-| Kong Proxy | 8000 | 8000 | Entrada HTTP del API Gateway |
-| Kong Admin | 8001 | 8001 | API administrativa local de Kong |
-| RabbitMQ AMQP | 5672 | 5672 | Broker AMQP |
-| RabbitMQ Management | 15672 | 15672 | Consola web de RabbitMQ |
-| academic-service | 3001 | 3001 | Servicio FastAPI base |
-| payments-service | 3002 | 3002 | Servicio FastAPI base |
-| wellbeing-service | 3003 | 3003 | Servicio FastAPI base |
-| academic-db | 5433 | 5432 | PostgreSQL de academic-service |
-| payments-db | 5434 | 5432 | PostgreSQL de payments-service |
-| wellbeing-db | 5435 | 5432 | PostgreSQL de wellbeing-service |
+Cuando los contenedores esten healthy, abre:
 
-## Rutas Gateway
+- Frontend: `http://localhost:5173`
+- Dashboard: `http://localhost:5173/dashboard`
+- Kong Gateway: `http://localhost:8000`
+- Kong Admin: `http://localhost:8001`
+- RabbitMQ Management: `http://localhost:15672`
 
-Kong carga `infrastructure/gateway/kong.yml` en modo DB-less:
-
-- `/academic` -> `academic-service:3001`
-- `/payments` -> `payments-service:3002`
-- `/wellbeing` -> `wellbeing-service:3003`
+## API Key de desarrollo
 
 Las rutas de negocio expuestas por Kong requieren API Key mediante el header `apikey`.
-Para desarrollo local, configura el frontend con:
+
+Para desarrollo local, `.env.example` usa:
 
 ```powershell
-VITE_API_KEY=replace-with-development-key
+VITE_API_KEY=campusconnect-dev-api-key
 ```
 
-Ejemplo de verificacion con API Key:
+Esta clave es solo de desarrollo local y coincide con el consumer declarado en `infrastructure/gateway/kong.yml`.
+
+Ejemplos:
 
 ```powershell
-curl -H "apikey: replace-with-development-key" http://localhost:8000/academic/students
+curl http://localhost:8000/academic/students
+curl -H "apikey: campusconnect-dev-api-key" http://localhost:8000/academic/students
 ```
 
-## Levantar Docker
+La primera solicitud debe responder `401`. La segunda debe llegar al servicio.
+
+## URLs de servicios
+
+| Componente | URL |
+|---|---|
+| Frontend | `http://localhost:5173` |
+| Kong Gateway | `http://localhost:8000` |
+| Kong Admin | `http://localhost:8001` |
+| Academic Service | `http://localhost:3001` |
+| Payments Service | `http://localhost:3002` |
+| Wellbeing Service | `http://localhost:3003` |
+| Notifications Service | `http://localhost:3004` |
+| Analytics Service | `http://localhost:3005` |
+| RabbitMQ Management | `http://localhost:15672` |
+
+RabbitMQ Management:
+
+- Usuario: `campusconnect`
+- Password: `campusconnect`
+
+## Swagger
+
+- Academic: `http://localhost:3001/docs`
+- Payments: `http://localhost:3002/docs`
+- Wellbeing: `http://localhost:3003/docs`
+- Notifications: `http://localhost:3004/docs`
+- Analytics: `http://localhost:3005/docs`
+
+## Verificacion
+
+```powershell
+docker compose ps
+curl http://localhost:5173/health
+curl http://localhost:3001/health
+curl http://localhost:3002/health
+curl http://localhost:3003/health
+curl http://localhost:3004/health
+curl http://localhost:3005/health
+```
+
+Verificar Kong con API Key:
+
+```powershell
+curl -H "apikey: campusconnect-dev-api-key" http://localhost:8000/academic/students
+```
+
+## Frontend
+
+El frontend se construye dentro de Docker con Vite y se sirve con Nginx. React Router funciona al refrescar rutas internas gracias al fallback a `index.html`.
+
+Variables usadas en build:
+
+```powershell
+VITE_API_GATEWAY_URL=http://localhost:8000
+VITE_NOTIFICATIONS_API_URL=http://localhost:3004
+VITE_ANALYTICS_API_URL=http://localhost:3005
+VITE_API_KEY=campusconnect-dev-api-key
+```
+
+Importante: las variables `VITE_*` quedan embebidas en el bundle durante el build. Si cambias estos valores, reconstruye el frontend:
+
+```powershell
+docker compose build frontend
+docker compose up -d frontend
+```
+
+## Demo rapida
+
+1. Abre `http://localhost:5173/dashboard`.
+2. Registra un estudiante en `http://localhost:5173/academic/students/new`.
+3. Registra o confirma un pago en `http://localhost:5173/payments`.
+4. Registra asistencia en `http://localhost:5173/wellbeing/attendance/new`.
+5. Registra un incidente en `http://localhost:5173/wellbeing/incidents/new`.
+6. Vuelve al dashboard y actualiza los indicadores.
+
+## Comandos utiles
+
+Levantar todo:
+
+```powershell
+docker compose up --build
+```
+
+Levantar en segundo plano:
 
 ```powershell
 docker compose up -d --build
 ```
 
-## Verificar infraestructura
+Detener:
 
 ```powershell
-docker compose ps
-docker compose config
+docker compose down
 ```
 
-Verificar servicios:
+Reconstruir:
 
 ```powershell
-curl http://localhost:3001/health
-curl http://localhost:3002/health
-curl http://localhost:3003/health
+docker compose build
+docker compose up -d
 ```
 
-Verificar Kong:
+Ver logs:
 
 ```powershell
-curl http://localhost:8000/academic/health
-curl http://localhost:8000/payments/health
-curl http://localhost:8000/wellbeing/health
+docker compose logs -f frontend
+docker compose logs -f kong
 ```
 
-Verificar RabbitMQ Management:
+## Troubleshooting
 
-- URL: `http://localhost:15672`
-- Usuario: `campusconnect`
-- Password: `campusconnect`
+Si el frontend carga pero las APIs devuelven `401`, revisa que `VITE_API_KEY` en `.env` coincida con la key de desarrollo declarada en Kong.
 
-## Contratos
+Si cambiaste variables `VITE_*`, reconstruye el frontend porque Vite las aplica en tiempo de build.
 
-Los contratos JSON Schema estan en `contracts/events`. En Fase 1 son documentales y no implican productores ni consumidores.
+El Dockerfile del frontend configura `npm strict-ssl=false` durante la etapa de build porque en algunos entornos Docker locales el registry npm presenta una cadena TLS no verificable por la imagen Node. Este ajuste aplica solo al build de desarrollo local.
+
+Si `localhost:5173` no responde, valida:
+
+```powershell
+docker compose ps frontend
+docker compose logs frontend
+```
