@@ -23,6 +23,11 @@ def init_db() -> None:
         connection.execute(text("ALTER TABLE students ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP"))
         connection.execute(text("UPDATE students SET updated_at = created_at WHERE updated_at IS NULL"))
         connection.execute(text("ALTER TABLE students ALTER COLUMN updated_at SET NOT NULL"))
+        connection.execute(
+            text("ALTER TABLE students ADD COLUMN IF NOT EXISTS financial_status VARCHAR(30) NOT NULL DEFAULT 'PENDING'")
+        )
+        connection.execute(text("ALTER TABLE students ADD COLUMN IF NOT EXISTS last_confirmed_payment_id VARCHAR(36)"))
+        connection.execute(text("ALTER TABLE students ADD COLUMN IF NOT EXISTS financial_status_updated_at TIMESTAMP"))
 
 
 def get_db():

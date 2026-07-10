@@ -1,6 +1,11 @@
 _format_version: "3.0"
 _transform: true
 
+consumers:
+  - username: campusconnect-frontend-dev
+    keyauth_credentials:
+      - key: campusconnect-dev-api-key
+
 services:
   - name: academic-service
     url: http://academic-service:3001
@@ -42,6 +47,7 @@ plugins:
         - Accept
         - Authorization
         - Content-Type
+        - apikey
         - X-Correlation-Id
       exposed_headers:
         - X-Correlation-Id
@@ -62,6 +68,7 @@ plugins:
         - Accept
         - Authorization
         - Content-Type
+        - apikey
         - X-Correlation-Id
       exposed_headers:
         - X-Correlation-Id
@@ -82,8 +89,36 @@ plugins:
         - Accept
         - Authorization
         - Content-Type
+        - apikey
         - X-Correlation-Id
       exposed_headers:
         - X-Correlation-Id
       credentials: false
       preflight_continue: false
+  - name: key-auth
+    route: academic-route
+    config:
+      key_names:
+        - apikey
+      key_in_header: true
+      key_in_query: false
+      key_in_body: false
+      hide_credentials: true
+  - name: key-auth
+    route: payments-route
+    config:
+      key_names:
+        - apikey
+      key_in_header: true
+      key_in_query: false
+      key_in_body: false
+      hide_credentials: true
+  - name: key-auth
+    route: wellbeing-route
+    config:
+      key_names:
+        - apikey
+      key_in_header: true
+      key_in_query: false
+      key_in_body: false
+      hide_credentials: true

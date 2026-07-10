@@ -38,6 +38,19 @@ Kong carga `infrastructure/gateway/kong.yml` en modo DB-less:
 - `/payments` -> `payments-service:3002`
 - `/wellbeing` -> `wellbeing-service:3003`
 
+Las rutas de negocio expuestas por Kong requieren API Key mediante el header `apikey`.
+Para desarrollo local, configura el frontend con:
+
+```powershell
+VITE_API_KEY=replace-with-development-key
+```
+
+Ejemplo de verificacion con API Key:
+
+```powershell
+curl -H "apikey: replace-with-development-key" http://localhost:8000/academic/students
+```
+
 ## Levantar Docker
 
 ```powershell

@@ -79,6 +79,16 @@ export function StudentDetailPage() {
             </dd>
           </div>
           <div>
+            <dt>Estado financiero</dt>
+            <dd>
+              <StatusBadge status={student.financial_status} />
+            </dd>
+          </div>
+          <div>
+            <dt>Ultimo pago confirmado</dt>
+            <dd>{student.last_confirmed_payment_id ?? "No registrado"}</dd>
+          </div>
+          <div>
             <dt>Documento</dt>
             <dd>{student.document_number}</dd>
           </div>
@@ -101,6 +111,14 @@ export function StudentDetailPage() {
           <div>
             <dt>Actualizado</dt>
             <dd>{new Date(student.updated_at).toLocaleString()}</dd>
+          </div>
+          <div>
+            <dt>Estado financiero actualizado</dt>
+            <dd>
+              {student.financial_status_updated_at
+                ? new Date(student.financial_status_updated_at).toLocaleString()
+                : "No registrado"}
+            </dd>
           </div>
         </dl>
       ) : null}

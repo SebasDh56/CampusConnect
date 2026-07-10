@@ -33,6 +33,9 @@ class StudentResponse(BaseModel):
     grade: str
     academic_year: str
     enrollment_status: str
+    financial_status: str
+    last_confirmed_payment_id: str | None
+    financial_status_updated_at: datetime | None
     created_at: datetime
     updated_at: datetime
 

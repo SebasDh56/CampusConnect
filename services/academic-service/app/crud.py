@@ -71,6 +71,18 @@ def update_student(db: Session, student: Student, payload: StudentUpdate) -> Stu
     return student
 
 
+def mark_student_payment_confirmed(db: Session, student_id: str, payment_id: str) -> Student | None:
+    student = db.get(Student, student_id)
+    if student is None:
+        return None
+
+    student.financial_status = "PAID"
+    student.last_confirmed_payment_id = payment_id
+    student.financial_status_updated_at = datetime.utcnow()
+    student.updated_at = datetime.utcnow()
+    return student
+
+
 def delete_student(db: Session, student: Student) -> None:
     db.delete(student)
     db.commit()
