@@ -7,6 +7,7 @@ import { StudentsListPage } from "./pages/academic/StudentsListPage";
 import { PaymentConfirmPage } from "./pages/payments/PaymentConfirmPage";
 import { PaymentCreatePage } from "./pages/payments/PaymentCreatePage";
 import { PaymentsListPage } from "./pages/payments/PaymentsListPage";
+import { DashboardPage } from "./pages/dashboard/DashboardPage";
 import { AnalyticsEventsPage } from "./pages/support/AnalyticsEventsPage";
 import { NotificationsPage } from "./pages/support/NotificationsPage";
 import { AttendanceCreatePage } from "./pages/wellbeing/AttendanceCreatePage";
@@ -19,7 +20,8 @@ export const router = createBrowserRouter([
     path: "/",
     element: <App />,
     children: [
-      { index: true, element: <Navigate to="/academic/students" replace /> },
+      { index: true, element: <Navigate to="/dashboard" replace /> },
+      { path: "dashboard", element: <DashboardPage /> },
       { path: "academic/students", element: <StudentsListPage /> },
       { path: "academic/students/new", element: <StudentCreatePage /> },
       { path: "academic/students/:studentId", element: <StudentDetailPage /> },
