@@ -1,0 +1,111 @@
+{
+  "info": {
+    "_postman_id": "da02c3ce-55fc-4e45-9f5e-campusconnect360",
+    "name": "CampusConnect 360 - Respaldo tecnico",
+    "description": "Coleccion de apoyo. La demostracion principal se realiza desde el frontend React.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "apikey",
+    "apikey": [
+      { "key": "key", "value": "apikey", "type": "string" },
+      { "key": "value", "value": "{{apiKey}}", "type": "string" },
+      { "key": "in", "value": "header", "type": "string" }
+    ]
+  },
+  "variable": [
+    { "key": "gatewayUrl", "value": "http://localhost:8000" },
+    { "key": "apiKey", "value": "campusconnect-dev-api-key" },
+    { "key": "schoolId", "value": "SCH-001" },
+    { "key": "studentId", "value": "" },
+    { "key": "paymentId", "value": "" },
+    { "key": "stamp", "value": "{{$timestamp}}" }
+  ],
+  "item": [
+    {
+      "name": "01 - Registrar estudiante",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"school_id\": \"{{schoolId}}\",\n  \"first_name\": \"Demo\",\n  \"last_name\": \"Postman\",\n  \"document_number\": \"DOC-{{stamp}}\",\n  \"grade\": \"8vo EGB\",\n  \"academic_year\": \"2026\",\n  \"enrollment_status\": \"ENROLLED\"\n}"
+        },
+        "url": "{{gatewayUrl}}/academic/students"
+      },
+      "event": [{
+        "listen": "test",
+        "script": { "exec": ["pm.collectionVariables.set('studentId', pm.response.json().student_id);"] }
+      }]
+    },
+    {
+      "name": "02 - Consultar estudiante",
+      "request": { "method": "GET", "url": "{{gatewayUrl}}/academic/students/{{studentId}}" }
+    },
+    {
+      "name": "03 - Crear obligacion pendiente",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"student_id\": \"{{studentId}}\",\n  \"school_id\": \"{{schoolId}}\",\n  \"invoice_id\": \"INV-{{stamp}}\",\n  \"amount\": 125.50,\n  \"currency\": \"USD\",\n  \"payment_method\": \"TRANSFER\",\n  \"payment_status\": \"PENDING\"\n}"
+        },
+        "url": "{{gatewayUrl}}/payments/payments"
+      },
+      "event": [{
+        "listen": "test",
+        "script": { "exec": ["pm.collectionVariables.set('paymentId', pm.response.json().payment_id);"] }
+      }]
+    },
+    {
+      "name": "04 - Confirmar pago",
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"payment_status\": \"PAID\"\n}" },
+        "url": "{{gatewayUrl}}/payments/payments/{{paymentId}}"
+      }
+    },
+    {
+      "name": "05 - Registrar asistencia",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"student_id\": \"{{studentId}}\",\n  \"school_id\": \"{{schoolId}}\",\n  \"grade\": \"8vo EGB\",\n  \"record_date\": \"2026-07-15\",\n  \"status\": \"PRESENT\",\n  \"recorded_by\": \"Docente Demo\"\n}"
+        },
+        "url": "{{gatewayUrl}}/wellbeing/attendance"
+      }
+    },
+    {
+      "name": "06 - Registrar incidente",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"student_id\": \"{{studentId}}\",\n  \"school_id\": \"{{schoolId}}\",\n  \"incident_type\": \"WELLBEING\",\n  \"severity\": \"MEDIUM\",\n  \"description\": \"Incidente controlado de demostracion\",\n  \"reported_by\": \"Bienestar Demo\"\n}"
+        },
+        "url": "{{gatewayUrl}}/wellbeing/incidents"
+      }
+    },
+    {
+      "name": "07 - Consultar notificaciones",
+      "request": { "method": "GET", "url": "{{gatewayUrl}}/notifications/notifications" }
+    },
+    {
+      "name": "08 - Consultar eventos analiticos",
+      "request": { "method": "GET", "url": "{{gatewayUrl}}/analytics/analytics-events" }
+    },
+    {
+      "name": "09 - Consultar procesamiento de notificaciones",
+      "request": { "method": "GET", "url": "{{gatewayUrl}}/notifications/processed-events" }
+    },
+    {
+      "name": "10 - Consultar procesamiento analitico",
+      "request": { "method": "GET", "url": "{{gatewayUrl}}/analytics/processed-events" }
+    }
+  ]
+}

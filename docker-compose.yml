@@ -31,8 +31,6 @@ services:
       context: ./frontend
       args:
         VITE_API_GATEWAY_URL: ${VITE_API_GATEWAY_URL:-http://localhost:8000}
-        VITE_NOTIFICATIONS_API_URL: ${VITE_NOTIFICATIONS_API_URL:-http://localhost:3004}
-        VITE_ANALYTICS_API_URL: ${VITE_ANALYTICS_API_URL:-http://localhost:3005}
         VITE_API_KEY: ${VITE_API_KEY:-campusconnect-dev-api-key}
     container_name: campusconnect-frontend
     restart: unless-stopped
@@ -55,8 +53,8 @@ services:
     container_name: campusconnect-rabbitmq
     restart: unless-stopped
     environment:
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:-campusconnect}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:-campusconnect}
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:-campus_user}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:-campus_pass}
     ports:
       - "5672:5672"
       - "15672:15672"
@@ -244,6 +242,9 @@ services:
       RABBITMQ_VHOST: campusconnect
       RABBITMQ_EXCHANGE: campusconnect.events
       RABBITMQ_QUEUE: notifications.events.queue
+      RABBITMQ_DEAD_LETTER_EXCHANGE: campusconnect.dead-letter
+      RABBITMQ_DEAD_LETTER_QUEUE: campusconnect.dead-letter.queue
+      RABBITMQ_DEAD_LETTER_ROUTING_KEY: dead-letter
     ports:
       - "3004:3004"
     depends_on:
@@ -302,6 +303,9 @@ services:
       RABBITMQ_VHOST: campusconnect
       RABBITMQ_EXCHANGE: campusconnect.events
       RABBITMQ_QUEUE: analytics.events.queue
+      RABBITMQ_DEAD_LETTER_EXCHANGE: campusconnect.dead-letter
+      RABBITMQ_DEAD_LETTER_QUEUE: campusconnect.dead-letter.queue
+      RABBITMQ_DEAD_LETTER_ROUTING_KEY: dead-letter
     ports:
       - "3005:3005"
     depends_on:
@@ -338,6 +342,31 @@ services:
       timeout: 5s
       retries: 5
       start_period: 20s
+
+  demo-seed:
+    image: python:3.12-slim
+    container_name: campusconnect-demo-seed
+    restart: "no"
+    working_dir: /app
+    command: python -m scripts.seed_demo --gateway http://kong:8000
+    volumes:
+      - ./scripts:/app/scripts:ro
+      - ./demo:/app/demo:ro
+    depends_on:
+      kong:
+        condition: service_healthy
+      academic-service:
+        condition: service_healthy
+      payments-service:
+        condition: service_healthy
+      wellbeing-service:
+        condition: service_healthy
+      notifications-service:
+        condition: service_healthy
+      analytics-service:
+        condition: service_healthy
+    networks:
+      - campusconnect-network
 
 networks:
   campusconnect-network:

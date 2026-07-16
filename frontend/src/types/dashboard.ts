@@ -26,6 +26,7 @@ export type DashboardData = {
   notifications: Notification[];
   analyticsEvents: AnalyticsEvent[];
   analyticsProcessedEvents: ProcessedEvent[];
+  notificationsProcessedEvents: ProcessedEvent[];
   serviceAvailability: ServiceAvailability[];
   ecosystemStatus: EcosystemStatus;
   errors: Partial<Record<ServiceKey, string>>;
@@ -38,5 +39,6 @@ export type DashboardMetrics = {
   attendanceCount: number;
   incidentsCount: number;
   processedEvents: number;
+  failedMessages: number;
   notificationsCount: number;
 };

@@ -1,43 +1,41 @@
-# Catalogo de Eventos
+# Catalogo de eventos implementados
 
-Este catalogo documenta contratos previstos para CampusConnect 360. En Fase 1 no existen productores, consumidores ni publicacion de eventos.
+Todos los eventos se publican en `campusconnect.events`, usan JSON y contienen
+`eventId`, `eventType`, `occurredAt`, `correlationId` y `data`.
 
-Todos los contratos base incluyen:
-
-- `eventId`
-- `eventType`
-- `occurredAt`
-- `correlationId`
-- `additionalProperties: false`
+| Evento | Routing key | Productor | Consumidores |
+|---|---|---|---|
+| StudentEnrolled | `student.enrolled` | Academic | Notifications, Analytics |
+| PaymentConfirmed | `payment.confirmed` | Payments | Academic, Notifications, Analytics |
+| AttendanceRecorded | `attendance.recorded` | Wellbeing | Analytics |
+| IncidentReported | `incident.reported` | Wellbeing | Notifications, Analytics |
 
 ## StudentEnrolled
 
-Contrato: `contracts/events/student-enrolled.schema.json`
-
-Routing key prevista: `student.enrolled`
-
-Descripcion: representa la inscripcion de un estudiante. Solo esta documentado como contrato base; no esta implementado.
+Se genera al crear una matricula. `data` contiene estudiante, colegio, grado,
+periodo academico y estado de matricula. Contrato:
+`contracts/events/student-enrolled.schema.json`.
 
 ## PaymentConfirmed
 
-Contrato: `contracts/events/payment-confirmed.schema.json`
-
-Routing key prevista: `payment.confirmed`
-
-Descripcion: representa la confirmacion de un pago. Solo esta documentado como contrato base; no esta implementado.
+Se genera al crear o actualizar un pago hacia `PAID` o `CONFIRMED`. Academic
+traduce el evento a una actualizacion de estado financiero. Contrato:
+`contracts/events/payment-confirmed.schema.json`.
 
 ## AttendanceRecorded
 
-Contrato: `contracts/events/attendance-recorded.schema.json`
-
-Routing key prevista: `attendance.recorded`
-
-Descripcion: representa el registro de asistencia. Solo esta documentado como contrato base; no esta implementado.
+Se genera al registrar asistencia, ausencia, atraso o ausencia justificada.
+Contrato: `contracts/events/attendance-recorded.schema.json`.
 
 ## IncidentReported
 
-Contrato: `contracts/events/incident-reported.schema.json`
+Se genera al registrar una novedad. Notifications crea la alerta simulada y
+Analytics actualiza su proyeccion. Contrato:
+`contracts/events/incident-reported.schema.json`.
 
-Routing key prevista: `incident.reported`
+## Entrega, errores e idempotencia
 
-Descripcion: representa el reporte de un incidente. Solo esta documentado como contrato base; no esta implementado.
+RabbitMQ entrega copias a colas por consumidor. Un consumidor confirma el
+mensaje solo despues de persistir sus efectos. `processed_events.event_id`
+impide reprocesar duplicados. Los rechazos sin requeue llegan a
+`campusconnect.dead-letter.queue`.

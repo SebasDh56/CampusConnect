@@ -330,6 +330,21 @@ a {
   overflow-wrap: anywhere;
 }
 
+.section-block {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+}
+
+.section-block h3 {
+  margin: 0;
+}
+
+.section-description {
+  margin: 0.4rem 0 1rem;
+  color: var(--muted);
+}
+
 .dashboard-page {
   max-width: 1280px;
 }
