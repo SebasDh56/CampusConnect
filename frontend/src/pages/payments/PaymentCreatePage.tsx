@@ -5,6 +5,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { createPayment } from "../../api/paymentsApi";
 import { FormField } from "../../components/FormField";
 import { PageHeader } from "../../components/PageHeader";
+import { StudentSelector } from "../../components/StudentSelector";
+import { paymentStudentFields } from "../studentFormSelection";
 import type { PaymentCreate } from "../../types/payments";
 
 type PaymentForm = Omit<PaymentCreate, "amount"> & {
@@ -106,22 +108,15 @@ export function PaymentCreatePage() {
       {submitError ? <div className="alert error">{submitError}</div> : null}
 
       <form className="form-grid" onSubmit={handleSubmit}>
-        <FormField
-          label="Student ID"
-          name="student_id"
+        <StudentSelector
           value={form.student_id}
-          onChange={handleChange}
+          onSelect={(student) => {
+            setForm((current) => ({ ...current, ...paymentStudentFields(student) }));
+            setErrors((current) => ({ ...current, student_id: undefined, school_id: undefined }));
+          }}
           error={errors.student_id}
-          required
         />
-        <FormField
-          label="School ID"
-          name="school_id"
-          value={form.school_id}
-          onChange={handleChange}
-          error={errors.school_id}
-          required
-        />
+        <div className="state-message compact">Colegio seleccionado: {form.school_id || "Ninguno"}</div>
         <FormField
           label="Invoice ID"
           name="invoice_id"

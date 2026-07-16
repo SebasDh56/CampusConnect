@@ -40,6 +40,12 @@ La primera construcción puede tardar unos minutos. Cuando termine, revisa que t
 docker compose ps
 ```
 
+Durante el primer arranque, el servicio `demo-seed` carga un estudiante, un pago confirmado, una asistencia y un incidente mediante las APIs. De esta forma también se generan los eventos, notificaciones e indicadores correspondientes. El contenedor termina con código `0` cuando la carga fue correcta:
+
+```powershell
+docker compose ps -a demo-seed
+```
+
 Luego puedes entrar a:
 
 - Aplicación: `http://localhost:5173`
@@ -53,6 +59,19 @@ Para RabbitMQ usa estas credenciales locales:
 - Usuario: `campus_user`
 - Contraseña: `campus_pass`
 
+## Actores de demostración
+
+La seguridad técnica usa API Key, por lo que el proyecto no tiene una pantalla de login. Para representar a los actores de la consigna se incluyen estos perfiles de prueba en `demo/demo-data.json`:
+
+| Actor | Identificador | Sección |
+|---|---|---|
+| Secretaría | `secretaria.demo` | Académico |
+| Finanzas | `finanzas.demo` | Pagos |
+| Docente | `docente.demo` | Bienestar / asistencia |
+| Bienestar | `bienestar.demo` | Bienestar / incidentes |
+
+Son identidades funcionales para la demostración, no cuentas con contraseña. La autorización de las APIs sigue estando a cargo de Kong mediante `campusconnect-dev-api-key`.
+
 ## Recorrido rápido
 
 La forma más sencilla de probar el sistema desde la interfaz es esta:
@@ -64,6 +83,16 @@ La forma más sencilla de probar el sistema desde la interfaz es esta:
 5. Regresa al dashboard y actualiza los indicadores.
 
 Cada acción genera los eventos correspondientes. Notifications y Analytics los procesan en segundo plano, por lo que los resultados pueden tardar un par de segundos en aparecer.
+
+En los formularios de Finanzas y Bienestar el estudiante se selecciona desde los registros de Academic Service. Su colegio y, cuando corresponde, su grado se completan automáticamente. La ficha académica también muestra el historial de eventos asociado al estudiante.
+
+Si quieres volver a ejecutar la carga demo sin recrear los volúmenes:
+
+```powershell
+docker compose run --rm demo-seed
+```
+
+El proceso es idempotente: reutiliza el estudiante y el pago identificados en `demo/demo-data.json` y evita duplicar la asistencia o el incidente de demostración.
 
 ## Servicios y documentación Swagger
 

@@ -31,6 +31,7 @@ export function FormField(props: FormFieldProps) {
           name={props.name}
           value={props.value}
           onChange={props.onChange as (event: ChangeEvent<HTMLSelectElement>) => void}
+          disabled={props.disabled}
           required={props.required}
         >
           {props.options.map((option) => (

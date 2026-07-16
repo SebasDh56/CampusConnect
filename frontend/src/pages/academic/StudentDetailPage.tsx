@@ -2,15 +2,22 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
 import { getStudentById } from "../../api/academicApi";
+import { getAnalyticsEvents } from "../../api/supportApi";
+import { DataTable } from "../../components/DataTable";
+import { EmptyState } from "../../components/EmptyState";
 import { PageHeader } from "../../components/PageHeader";
 import { StatusBadge } from "../../components/StatusBadge";
 import type { Student } from "../../types/academic";
+import type { AnalyticsEvent } from "../../types/support";
+import { getStudentEvents } from "./studentEvents";
 
 export function StudentDetailPage() {
   const { studentId } = useParams();
   const [student, setStudent] = useState<Student | null>(null);
+  const [events, setEvents] = useState<AnalyticsEvent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [historyError, setHistoryError] = useState<string | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -29,6 +36,13 @@ export function StudentDetailPage() {
 
         if (isMounted) {
           setStudent(data);
+        }
+
+        try {
+          const analyticsEvents = await getAnalyticsEvents();
+          if (isMounted) setEvents(getStudentEvents(analyticsEvents, studentId));
+        } catch {
+          if (isMounted) setHistoryError("No se pudo cargar el historial de eventos.");
         }
       } catch {
         if (isMounted) {
@@ -65,7 +79,8 @@ export function StudentDetailPage() {
       {error ? <div className="alert error">{error}</div> : null}
 
       {!isLoading && !error && student ? (
-        <dl className="detail-grid">
+        <>
+          <dl className="detail-grid">
           <div>
             <dt>Nombre</dt>
             <dd>
@@ -120,7 +135,31 @@ export function StudentDetailPage() {
                 : "No registrado"}
             </dd>
           </div>
-        </dl>
+          </dl>
+
+          <section className="section-block">
+            <h3>Historial básico de eventos</h3>
+            <p className="section-description">Eventos asociados al estudiante y consolidados por Analytics Service.</p>
+            {historyError ? <div className="alert error">{historyError}</div> : null}
+            {!historyError && events.length === 0 ? (
+              <EmptyState title="Sin eventos" description="Todavía no existen eventos asociados al estudiante." />
+            ) : null}
+            {!historyError && events.length > 0 ? (
+              <DataTable
+                data={events}
+                getRowKey={(event) => event.analytics_event_id}
+                columns={[
+                  { header: "Evento", render: (event) => event.event_type },
+                  { header: "Correlation ID", render: (event) => event.correlation_id ?? "No disponible" },
+                  {
+                    header: "Fecha",
+                    render: (event) => new Date(event.occurred_at ?? event.processed_at).toLocaleString(),
+                  },
+                ]}
+              />
+            ) : null}
+          </section>
+        </>
       ) : null}
     </div>
   );
