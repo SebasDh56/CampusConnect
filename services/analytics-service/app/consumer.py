@@ -78,7 +78,25 @@ class AnalyticsConsumer:
             exchange_type="topic",
             durable=True,
         )
-        channel.queue_declare(queue=settings.rabbitmq_queue, durable=True)
+        channel.exchange_declare(
+            exchange=settings.rabbitmq_dead_letter_exchange,
+            exchange_type="direct",
+            durable=True,
+        )
+        channel.queue_declare(queue=settings.rabbitmq_dead_letter_queue, durable=True)
+        channel.queue_bind(
+            queue=settings.rabbitmq_dead_letter_queue,
+            exchange=settings.rabbitmq_dead_letter_exchange,
+            routing_key=settings.rabbitmq_dead_letter_routing_key,
+        )
+        channel.queue_declare(
+            queue=settings.rabbitmq_queue,
+            durable=True,
+            arguments={
+                "x-dead-letter-exchange": settings.rabbitmq_dead_letter_exchange,
+                "x-dead-letter-routing-key": settings.rabbitmq_dead_letter_routing_key,
+            },
+        )
         for routing_key in ROUTING_KEYS:
             channel.queue_bind(
                 queue=settings.rabbitmq_queue,

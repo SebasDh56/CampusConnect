@@ -63,8 +63,8 @@ La primera solicitud debe responder `401`. La segunda debe llegar al servicio.
 
 RabbitMQ Management:
 
-- Usuario: `campusconnect`
-- Password: `campusconnect`
+- Usuario: `campus_user`
+- Password: `campus_pass`
 
 ## Swagger
 
@@ -100,8 +100,6 @@ Variables usadas en build:
 
 ```powershell
 VITE_API_GATEWAY_URL=http://localhost:8000
-VITE_NOTIFICATIONS_API_URL=http://localhost:3004
-VITE_ANALYTICS_API_URL=http://localhost:3005
 VITE_API_KEY=campusconnect-dev-api-key
 ```
 
@@ -120,6 +118,82 @@ docker compose up -d frontend
 4. Registra asistencia en `http://localhost:5173/wellbeing/attendance/new`.
 5. Registra un incidente en `http://localhost:5173/wellbeing/incidents/new`.
 6. Vuelve al dashboard y actualiza los indicadores.
+
+Las cinco APIs de negocio se consumen mediante Kong. Notifications y Analytics
+tambien requieren el header `apikey`; los puertos directos se conservan para
+Swagger, health checks y diagnostico local.
+
+## Pruebas automatizadas
+
+Contratos de infraestructura y utilidades de demostracion:
+
+```powershell
+python -m unittest discover -s tests -v
+```
+
+Frontend:
+
+```powershell
+cd frontend
+npm ci
+npm test
+npm run build
+```
+
+Consumidores asincronos:
+
+```powershell
+cd services/notifications-service
+python -m unittest discover -s tests -v
+
+cd ../analytics-service
+python -m unittest discover -s tests -v
+```
+
+## Smoke test integral
+
+Con el ecosistema levantado y saludable:
+
+```powershell
+python scripts/smoke_test.py
+```
+
+El script verifica automaticamente:
+
+- rechazo `401` sin API Key;
+- health checks de los cinco servicios;
+- registro de estudiante, deuda, pago, asistencia e incidente;
+- cuatro eventos procesados por Analytics;
+- tres notificaciones de negocio;
+- actualizacion del estudiante a estado financiero `PAID`;
+- rechazo de un evento invalido y llegada a la Dead Letter Queue;
+- idempotencia al publicar dos veces el mismo `eventId`.
+
+La salida final es un JSON con los identificadores creados y las evidencias del
+flujo. La coleccion `postman/CampusConnect-360.postman_collection.json` ofrece
+el mismo recorrido como respaldo tecnico.
+
+## Escenario de falla controlada
+
+RabbitMQ usa colas separadas por consumidor y un Dead Letter Exchange. Cuando
+un consumidor recibe un evento con forma invalida, registra `FAILED` cuando el
+mensaje conserva un `eventId`, ejecuta `basic_nack(requeue=false)` y RabbitMQ lo
+envia a `campusconnect.dead-letter.queue`. El dashboard separa estos mensajes
+fallidos de los errores de disponibilidad HTTP.
+
+Para inspeccionar la DLQ:
+
+```powershell
+docker exec campusconnect-rabbitmq rabbitmqctl -p campusconnect list_queues name messages consumers
+```
+
+Si se cambia la topologia de colas sobre una instalacion anterior, recrea solo
+los datos locales de Docker antes de volver a levantar el entorno:
+
+```powershell
+docker compose down -v
+docker compose up -d --build
+```
 
 ## Comandos utiles
 

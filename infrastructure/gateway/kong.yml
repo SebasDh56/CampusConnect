@@ -31,6 +31,22 @@ services:
           - /wellbeing
         strip_path: true
 
+  - name: notifications-service
+    url: http://notifications-service:3004
+    routes:
+      - name: notifications-route
+        paths:
+          - /notifications
+        strip_path: true
+
+  - name: analytics-service
+    url: http://analytics-service:3005
+    routes:
+      - name: analytics-route
+        paths:
+          - /analytics
+        strip_path: true
+
 plugins:
   - name: cors
     route: academic-route
@@ -95,6 +111,42 @@ plugins:
         - X-Correlation-Id
       credentials: false
       preflight_continue: false
+  - name: cors
+    route: notifications-route
+    config:
+      origins:
+        - http://localhost:5173
+      methods:
+        - GET
+        - OPTIONS
+      headers:
+        - Accept
+        - Authorization
+        - Content-Type
+        - apikey
+        - X-Correlation-Id
+      exposed_headers:
+        - X-Correlation-Id
+      credentials: false
+      preflight_continue: false
+  - name: cors
+    route: analytics-route
+    config:
+      origins:
+        - http://localhost:5173
+      methods:
+        - GET
+        - OPTIONS
+      headers:
+        - Accept
+        - Authorization
+        - Content-Type
+        - apikey
+        - X-Correlation-Id
+      exposed_headers:
+        - X-Correlation-Id
+      credentials: false
+      preflight_continue: false
   - name: key-auth
     route: academic-route
     config:
@@ -115,6 +167,24 @@ plugins:
       hide_credentials: true
   - name: key-auth
     route: wellbeing-route
+    config:
+      key_names:
+        - apikey
+      key_in_header: true
+      key_in_query: false
+      key_in_body: false
+      hide_credentials: true
+  - name: key-auth
+    route: notifications-route
+    config:
+      key_names:
+        - apikey
+      key_in_header: true
+      key_in_query: false
+      key_in_body: false
+      hide_credentials: true
+  - name: key-auth
+    route: analytics-route
     config:
       key_names:
         - apikey

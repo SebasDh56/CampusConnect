@@ -4,6 +4,7 @@ import {
   getAnalyticsEvents,
   getAnalyticsProcessedEvents,
   getNotifications,
+  getNotificationsProcessedEvents,
 } from "./supportApi";
 import { getAttendance, getIncidents } from "./wellbeingApi";
 import type { Student } from "../types/academic";
@@ -53,6 +54,7 @@ export async function getDashboardData(): Promise<DashboardData> {
     notificationsResult,
     analyticsEventsResult,
     analyticsProcessedEventsResult,
+    notificationsProcessedEventsResult,
   ] = await Promise.allSettled([
     getStudents(),
     getPayments(),
@@ -61,6 +63,7 @@ export async function getDashboardData(): Promise<DashboardData> {
     getNotifications(),
     getAnalyticsEvents(),
     getAnalyticsProcessedEvents(),
+    getNotificationsProcessedEvents(),
   ]);
 
   const students = valueOrFallback<Student[]>({
@@ -98,6 +101,11 @@ export async function getDashboardData(): Promise<DashboardData> {
     fallback: [],
     result: analyticsProcessedEventsResult,
   });
+  const notificationsProcessedEvents = valueOrFallback<ProcessedEvent[]>({
+    service: "notifications",
+    fallback: [],
+    result: notificationsProcessedEventsResult,
+  });
 
   const serviceAvailability: ServiceAvailability[] = [
     {
@@ -118,7 +126,9 @@ export async function getDashboardData(): Promise<DashboardData> {
     {
       key: "notifications",
       label: "Notifications Service",
-      available: notificationsResult.status === "fulfilled",
+      available:
+        notificationsResult.status === "fulfilled" &&
+        notificationsProcessedEventsResult.status === "fulfilled",
     },
     {
       key: "analytics",
@@ -137,13 +147,15 @@ export async function getDashboardData(): Promise<DashboardData> {
     notifications,
     analyticsEvents,
     analyticsProcessedEvents,
+    notificationsProcessedEvents,
     serviceAvailability,
     ecosystemStatus: ecosystemStatus(serviceAvailability),
     errors: {
       academic: errorMessage(studentsResult),
       payments: errorMessage(paymentsResult),
       wellbeing: errorMessage(attendanceResult) ?? errorMessage(incidentsResult),
-      notifications: errorMessage(notificationsResult),
+      notifications:
+        errorMessage(notificationsResult) ?? errorMessage(notificationsProcessedEventsResult),
       analytics: errorMessage(analyticsEventsResult) ?? errorMessage(analyticsProcessedEventsResult),
     },
   };

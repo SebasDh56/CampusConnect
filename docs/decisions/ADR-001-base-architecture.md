@@ -1,40 +1,46 @@
-# ADR-001 - Arquitectura base
+# ADR-001 - Arquitectura de integracion local
 
 ## Estado
 
-Aceptada para Fase 1.
+Aceptada e implementada.
 
 ## Contexto
 
-CampusConnect 360 requiere integrar servicios independientes para una red de colegios. La primera fase debe dejar una base local reproducible, observable y preparada para evolucionar sin introducir aun logica de negocio.
+CampusConnect 360 necesita integrar dominios independientes, permitir una demo
+local reproducible y evidenciar APIs, mensajeria, seguridad, resiliencia,
+trazabilidad y una vista analitica.
 
 ## Decision
 
-Se adopta una arquitectura basada en FastAPI, PostgreSQL, RabbitMQ, Kong DB-less y Docker Compose.
+Se adopta React para la interfaz, FastAPI para los cinco servicios, PostgreSQL
+con una base por servicio, RabbitMQ con exchange topic, Kong DB-less como API
+Gateway y Docker Compose para orquestacion local.
 
-## FastAPI
+Los productores publican eventos de negocio y los consumidores usan colas
+propias. Esta separacion implementa Publish/Subscribe sin convertir a los
+consumidores en competidores. El flujo PaymentConfirmed hacia Academic usa una
+cola dedicada punto a punto.
 
-FastAPI se eligio por su bajo costo operativo, soporte nativo de OpenAPI, tipado con Python y buena ergonomia para servicios HTTP pequenos y medianos.
+Kong aplica API Key y CORS a todas las APIs usadas por el frontend. Analytics
+mantiene una proyeccion CQRS para el dashboard. Cada consumidor aplica
+idempotencia por `eventId` y envia rechazos a una Dead Letter Queue comun.
 
-## PostgreSQL
+## Alternativas descartadas
 
-PostgreSQL se eligio como base relacional principal por su madurez, consistencia transaccional, soporte SQL completo y amplio ecosistema. Cada servicio usa una base independiente para preservar limites de propiedad de datos.
-
-## RabbitMQ
-
-RabbitMQ se eligio como broker AMQP para integraciones asincronas futuras. En Fase 1 solo se deja preparada la infraestructura declarativa; no se implementan productores ni consumidores.
-
-## Kong
-
-Kong se eligio como API Gateway por su soporte de modo DB-less, configuracion declarativa y capacidad de centralizar rutas sin requerir una base de datos adicional.
-
-## Docker Compose
-
-Docker Compose se eligio para orquestacion local porque permite levantar todos los componentes de infraestructura con una configuracion versionable y simple para desarrollo.
+- Un monolito reducia infraestructura, pero no evidenciaba limites de dominio ni
+  patrones de integracion.
+- Kafka agregaba complejidad operativa innecesaria para el volumen de la demo.
+- Llamadas sincronas entre todos los servicios aumentaban acoplamiento y no
+  permitian demostrar resiliencia asincrona.
+- Un dashboard externo agregaba otra herramienta; React reutiliza el portal y
+  consume la proyeccion real.
 
 ## Consecuencias
 
-- La infraestructura local puede levantarse con un unico comando.
-- Cada servicio queda aislado con su propia base de datos.
-- El gateway y RabbitMQ quedan preparados de forma declarativa.
-- Las fases siguientes pueden agregar dominio y mensajeria sin redisenar la base.
+- El entorno completo se levanta con un comando.
+- Cada dominio mantiene su persistencia.
+- Los eventos pueden procesarse de forma eventual e idempotente.
+- La DLQ hace visible una falla controlada.
+- La API Key local no debe confundirse con seguridad de produccion.
+- Sin Transactional Outbox existe una ventana de inconsistencia entre commit y
+  publicacion; se registra como limitacion conocida.

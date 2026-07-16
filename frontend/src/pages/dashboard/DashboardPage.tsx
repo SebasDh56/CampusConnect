@@ -9,8 +9,7 @@ import { StatusBadge } from "../../components/StatusBadge";
 import { SystemStatus } from "../../components/SystemStatus";
 import type { DashboardData, DashboardMetrics } from "../../types/dashboard";
 import type { AnalyticsEvent } from "../../types/support";
-
-const confirmedPaymentStatuses = new Set(["PAID", "CONFIRMED"]);
+import { calculateDashboardMetrics } from "./dashboardMetrics";
 
 const initialMetrics: DashboardMetrics = {
   totalStudents: 0,
@@ -19,6 +18,7 @@ const initialMetrics: DashboardMetrics = {
   attendanceCount: 0,
   incidentsCount: 0,
   processedEvents: 0,
+  failedMessages: 0,
   notificationsCount: 0,
 };
 
@@ -84,17 +84,7 @@ export function DashboardPage() {
       return initialMetrics;
     }
 
-    return {
-      totalStudents: data.students.length,
-      confirmedPayments: data.payments.filter((payment) =>
-        confirmedPaymentStatuses.has(payment.payment_status),
-      ).length,
-      pendingPayments: data.payments.filter((payment) => payment.payment_status === "PENDING").length,
-      attendanceCount: data.attendance.length,
-      incidentsCount: data.incidents.length,
-      processedEvents: data.analyticsProcessedEvents.length,
-      notificationsCount: data.notifications.length,
-    };
+    return calculateDashboardMetrics(data);
   }, [data]);
 
   const eventCounts = useMemo(
@@ -160,6 +150,7 @@ export function DashboardPage() {
             <MetricCard label="Asistencias" value={metrics.attendanceCount} helper="Registros capturados" />
             <MetricCard label="Incidentes" value={metrics.incidentsCount} helper="Reportes registrados" />
             <MetricCard label="Eventos procesados" value={metrics.processedEvents} helper="Analytics processed-events" />
+            <MetricCard label="Mensajes fallidos" value={metrics.failedMessages} helper="Eventos unicos con estado FAILED" />
             <MetricCard label="Notificaciones" value={metrics.notificationsCount} helper="Generadas" />
           </section>
 
