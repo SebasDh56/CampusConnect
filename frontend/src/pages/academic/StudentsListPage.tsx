@@ -46,7 +46,7 @@ export function StudentsListPage() {
   return (
     <div className="page-panel">
       <PageHeader
-        kicker="Portal Academico"
+        kicker="Portal Académico"
         title="Listado de estudiantes"
         description="Consulta los estudiantes registrados en Academic Service."
         action={

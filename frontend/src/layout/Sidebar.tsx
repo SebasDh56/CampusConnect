@@ -13,7 +13,7 @@ export function Sidebar() {
         Dashboard
       </NavLink>
 
-      <p className="sidebar-section">Academico</p>
+      <p className="sidebar-section">Académico</p>
       <NavLink className={linkClass} to="/academic/students">
         Estudiantes
       </NavLink>
@@ -42,7 +42,7 @@ export function Sidebar() {
         Notificaciones
       </NavLink>
       <NavLink className={linkClass} to="/support/analytics-events">
-        Eventos analiticos
+        Eventos analíticos
       </NavLink>
     </aside>
   );

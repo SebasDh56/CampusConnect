@@ -65,7 +65,7 @@ export function StudentDetailPage() {
   return (
     <div className="page-panel">
       <PageHeader
-        kicker="Portal Academico"
+        kicker="Portal Académico"
         title="Detalle de estudiante"
         description="Datos principales obtenidos desde Academic Service."
         action={
