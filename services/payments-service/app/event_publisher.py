@@ -19,7 +19,7 @@ def _connection_parameters() -> Iterator[pika.ConnectionParameters]:
     )
 
     # Compatibility with the current local RabbitMQ container, which exposes
-    # the default vhost and campusconnect/campusconnect credentials.
+    # the default vhost and campus_user/campus_pass credentials.
     if (
         settings.rabbitmq_user,
         settings.rabbitmq_password,

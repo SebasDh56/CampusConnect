@@ -43,7 +43,7 @@
   ],
   "queues": [
     {
-      "name": "student.enrolled.queue",
+      "name": "notifications.events.queue",
       "vhost": "campusconnect",
       "durable": true,
       "auto_delete": false,
@@ -53,7 +53,7 @@
       }
     },
     {
-      "name": "payment.confirmed.queue",
+      "name": "analytics.events.queue",
       "vhost": "campusconnect",
       "durable": true,
       "auto_delete": false,
@@ -63,17 +63,7 @@
       }
     },
     {
-      "name": "attendance.recorded.queue",
-      "vhost": "campusconnect",
-      "durable": true,
-      "auto_delete": false,
-      "arguments": {
-        "x-dead-letter-exchange": "campusconnect.dead-letter",
-        "x-dead-letter-routing-key": "dead-letter"
-      }
-    },
-    {
-      "name": "incident.reported.queue",
+      "name": "academic.payment-confirmed.queue",
       "vhost": "campusconnect",
       "durable": true,
       "auto_delete": false,
@@ -94,7 +84,7 @@
     {
       "source": "campusconnect.events",
       "vhost": "campusconnect",
-      "destination": "student.enrolled.queue",
+      "destination": "notifications.events.queue",
       "destination_type": "queue",
       "routing_key": "student.enrolled",
       "arguments": {}
@@ -102,7 +92,7 @@
     {
       "source": "campusconnect.events",
       "vhost": "campusconnect",
-      "destination": "payment.confirmed.queue",
+      "destination": "notifications.events.queue",
       "destination_type": "queue",
       "routing_key": "payment.confirmed",
       "arguments": {}
@@ -110,7 +100,31 @@
     {
       "source": "campusconnect.events",
       "vhost": "campusconnect",
-      "destination": "attendance.recorded.queue",
+      "destination": "notifications.events.queue",
+      "destination_type": "queue",
+      "routing_key": "incident.reported",
+      "arguments": {}
+    },
+    {
+      "source": "campusconnect.events",
+      "vhost": "campusconnect",
+      "destination": "analytics.events.queue",
+      "destination_type": "queue",
+      "routing_key": "student.enrolled",
+      "arguments": {}
+    },
+    {
+      "source": "campusconnect.events",
+      "vhost": "campusconnect",
+      "destination": "analytics.events.queue",
+      "destination_type": "queue",
+      "routing_key": "payment.confirmed",
+      "arguments": {}
+    },
+    {
+      "source": "campusconnect.events",
+      "vhost": "campusconnect",
+      "destination": "analytics.events.queue",
       "destination_type": "queue",
       "routing_key": "attendance.recorded",
       "arguments": {}
@@ -118,9 +132,17 @@
     {
       "source": "campusconnect.events",
       "vhost": "campusconnect",
-      "destination": "incident.reported.queue",
+      "destination": "analytics.events.queue",
       "destination_type": "queue",
       "routing_key": "incident.reported",
+      "arguments": {}
+    },
+    {
+      "source": "campusconnect.events",
+      "vhost": "campusconnect",
+      "destination": "academic.payment-confirmed.queue",
+      "destination_type": "queue",
+      "routing_key": "payment.confirmed",
       "arguments": {}
     },
     {

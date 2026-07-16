@@ -17,6 +17,9 @@ class Settings(BaseSettings):
     rabbitmq_vhost: str = "campusconnect"
     rabbitmq_exchange: str = "campusconnect.events"
     rabbitmq_queue: str = "notifications.events.queue"
+    rabbitmq_dead_letter_exchange: str = "campusconnect.dead-letter"
+    rabbitmq_dead_letter_queue: str = "campusconnect.dead-letter.queue"
+    rabbitmq_dead_letter_routing_key: str = "dead-letter"
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
