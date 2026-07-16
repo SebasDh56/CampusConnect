@@ -9,3 +9,4 @@ dist/
 .vite/
 .cache/
 *.log
+.worktrees/
