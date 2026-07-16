@@ -52,6 +52,18 @@ function firstError(results: PromiseSettledResult<unknown>[]): string | undefine
   return undefined;
 }
 
+function buildErrors(services: ServiceDefinition[]): Partial<Record<ServiceKey, string>> {
+  return services.reduce<Partial<Record<ServiceKey, string>>>((errors, { key, results }) => {
+    const message = firstError(results);
+
+    if (message) {
+      errors[key] = message;
+    }
+
+    return errors;
+  }, {});
+}
+
 function ecosystemStatus(availability: ServiceAvailability[]): EcosystemStatus {
   const availableCount = availability.filter((service) => service.available).length;
 
@@ -154,15 +166,6 @@ export async function getDashboardData(): Promise<DashboardData> {
     available: isAvailable(results),
   }));
 
-  const errors = Object.fromEntries(
-    services
-      .map(({ key, results }) => {
-        const message = firstError(results);
-        return message ? [key, message] : undefined;
-      })
-      .filter((entry): entry is [ServiceKey, string] => entry !== undefined),
-  ) as Partial<Record<ServiceKey, string>>;
-
   return {
     students,
     payments,
@@ -174,6 +177,6 @@ export async function getDashboardData(): Promise<DashboardData> {
     notificationsProcessedEvents,
     serviceAvailability,
     ecosystemStatus: ecosystemStatus(serviceAvailability),
-    errors,
+    errors: buildErrors(services),
   };
 }
