@@ -1,146 +1,172 @@
 # CampusConnect 360
 
-CampusConnect 360 es un ecosistema local de integracion para una red de colegios. Esta version esta preparada para ejecutarse con Docker Compose e incluye frontend, API Gateway, microservicios, bases PostgreSQL independientes y RabbitMQ.
+CampusConnect 360 es una plataforma pensada para conectar las operaciones de una red de colegios en un solo lugar. El proyecto integra los procesos académicos, pagos, bienestar estudiantil, notificaciones y analítica usando microservicios que se comunican tanto por HTTP como por eventos.
 
-## Prerrequisitos
+Todo el entorno se levanta con Docker Compose, así que no hace falta configurar cada servicio a mano. Al iniciar el proyecto se ejecutan el frontend, Kong, RabbitMQ, cinco microservicios y una base PostgreSQL independiente para cada servicio que necesita persistencia.
+
+## Lo que incluye
+
+- Registro y consulta de estudiantes.
+- Registro de deudas y confirmación de pagos.
+- Registro de asistencias e incidentes.
+- Notificaciones generadas a partir de eventos.
+- Consolidación de eventos para analítica.
+- Dashboard con el estado general de la plataforma.
+- API Gateway con API Key para las rutas de negocio.
+- Manejo de eventos duplicados y mensajes fallidos mediante una Dead Letter Queue.
+- Pruebas automáticas, smoke test y colección de Postman.
+
+## Antes de empezar
+
+Solo necesitas tener instalado:
 
 - Git.
-- Docker Desktop o Docker Engine con Docker Compose v2.
+- Docker Desktop, o Docker Engine con Docker Compose v2.
 
-Node.js solo es necesario si quieres ejecutar o validar el frontend fuera de Docker.
+Node.js y Python son necesarios únicamente si quieres ejecutar las pruebas directamente desde tu máquina. Para levantar la aplicación completa basta con Docker.
 
-## Instalacion rapida
+## Cómo levantar el proyecto
 
 ```powershell
-git clone <repositorio>
+git clone https://github.com/SebasDh56/CampusConnect.git
 cd CampusConnect
-cp .env.example .env
-docker compose up --build
+Copy-Item .env.example .env
+docker compose up -d --build
 ```
 
-Cuando los contenedores esten healthy, abre:
-
-- Frontend: `http://localhost:5173`
-- Dashboard: `http://localhost:5173/dashboard`
-- Kong Gateway: `http://localhost:8000`
-- Kong Admin: `http://localhost:8001`
-- RabbitMQ Management: `http://localhost:15672`
-
-## API Key de desarrollo
-
-Las rutas de negocio expuestas por Kong requieren API Key mediante el header `apikey`.
-
-Para desarrollo local, `.env.example` usa:
+La primera construcción puede tardar unos minutos. Cuando termine, revisa que todos los contenedores estén saludables:
 
 ```powershell
-VITE_API_KEY=campusconnect-dev-api-key
+docker compose ps
 ```
 
-Esta clave es solo de desarrollo local y coincide con el consumer declarado en `infrastructure/gateway/kong.yml`.
+Durante el primer arranque, el servicio `demo-seed` carga un estudiante, un pago confirmado, una asistencia y un incidente mediante las APIs. De esta forma también se generan los eventos, notificaciones e indicadores correspondientes. El contenedor termina con código `0` cuando la carga fue correcta:
 
-Ejemplos:
+```powershell
+docker compose ps -a demo-seed
+```
+
+Luego puedes entrar a:
+
+- Aplicación: `http://localhost:5173`
+- Dashboard: `http://localhost:5173/dashboard`
+- API Gateway: `http://localhost:8000`
+- Administración de Kong: `http://localhost:8001`
+- Administración de RabbitMQ: `http://localhost:15672`
+
+Para RabbitMQ usa estas credenciales locales:
+
+- Usuario: `campus_user`
+- Contraseña: `campus_pass`
+
+## Actores de demostración
+
+La seguridad técnica usa API Key, por lo que el proyecto no tiene una pantalla de login. Para representar a los actores de la consigna se incluyen estos perfiles de prueba en `demo/demo-data.json`:
+
+| Actor | Identificador | Sección |
+|---|---|---|
+| Secretaría | `secretaria.demo` | Académico |
+| Finanzas | `finanzas.demo` | Pagos |
+| Docente | `docente.demo` | Bienestar / asistencia |
+| Bienestar | `bienestar.demo` | Bienestar / incidentes |
+
+Son identidades funcionales para la demostración, no cuentas con contraseña. La autorización de las APIs sigue estando a cargo de Kong mediante `campusconnect-dev-api-key`.
+
+## Recorrido rápido
+
+La forma más sencilla de probar el sistema desde la interfaz es esta:
+
+1. Registra un estudiante.
+2. Crea una deuda y confirma el pago.
+3. Registra una asistencia.
+4. Reporta un incidente.
+5. Regresa al dashboard y actualiza los indicadores.
+
+Cada acción genera los eventos correspondientes. Notifications y Analytics los procesan en segundo plano, por lo que los resultados pueden tardar un par de segundos en aparecer.
+
+En los formularios de Finanzas y Bienestar el estudiante se selecciona desde los registros de Academic Service. Su colegio y, cuando corresponde, su grado se completan automáticamente. La ficha académica también muestra el historial de eventos asociado al estudiante.
+
+Si quieres volver a ejecutar la carga demo sin recrear los volúmenes:
+
+```powershell
+docker compose run --rm demo-seed
+```
+
+El proceso es idempotente: reutiliza el estudiante y el pago identificados en `demo/demo-data.json` y evita duplicar la asistencia o el incidente de demostración.
+
+## Servicios y documentación Swagger
+
+| Servicio | API | Swagger |
+|---|---|---|
+| Academic | `http://localhost:3001` | `http://localhost:3001/docs` |
+| Payments | `http://localhost:3002` | `http://localhost:3002/docs` |
+| Wellbeing | `http://localhost:3003` | `http://localhost:3003/docs` |
+| Notifications | `http://localhost:3004` | `http://localhost:3004/docs` |
+| Analytics | `http://localhost:3005` | `http://localhost:3005/docs` |
+
+Aunque los puertos directos están disponibles para Swagger, health checks y diagnóstico local, el frontend consume las cinco APIs mediante Kong.
+
+## API Key local
+
+Kong protege las rutas de negocio usando el header `apikey`. La clave incluida para desarrollo es:
+
+```text
+campusconnect-dev-api-key
+```
+
+Por ejemplo:
 
 ```powershell
 curl http://localhost:8000/academic/students
 curl -H "apikey: campusconnect-dev-api-key" http://localhost:8000/academic/students
 ```
 
-La primera solicitud debe responder `401`. La segunda debe llegar al servicio.
+La primera petición responde `401` porque no tiene credenciales. La segunda sí llega a Academic Service.
 
-## URLs de servicios
+Esta clave es únicamente para el entorno local. Está definida en `.env.example` y coincide con el consumer configurado en `infrastructure/gateway/kong.yml`.
 
-| Componente | URL |
-|---|---|
-| Frontend | `http://localhost:5173` |
-| Kong Gateway | `http://localhost:8000` |
-| Kong Admin | `http://localhost:8001` |
-| Academic Service | `http://localhost:3001` |
-| Payments Service | `http://localhost:3002` |
-| Wellbeing Service | `http://localhost:3003` |
-| Notifications Service | `http://localhost:3004` |
-| Analytics Service | `http://localhost:3005` |
-| RabbitMQ Management | `http://localhost:15672` |
+## Cómo comprobar que todo funciona
 
-RabbitMQ Management:
-
-- Usuario: `campus_user`
-- Password: `campus_pass`
-
-## Swagger
-
-- Academic: `http://localhost:3001/docs`
-- Payments: `http://localhost:3002/docs`
-- Wellbeing: `http://localhost:3003/docs`
-- Notifications: `http://localhost:3004/docs`
-- Analytics: `http://localhost:3005/docs`
-
-## Verificacion
+El proyecto incluye un smoke test que recorre el flujo principal de inicio a fin. Primero levanta el entorno y luego ejecuta:
 
 ```powershell
-docker compose ps
-curl http://localhost:5173/health
-curl http://localhost:3001/health
-curl http://localhost:3002/health
-curl http://localhost:3003/health
-curl http://localhost:3004/health
-curl http://localhost:3005/health
+python scripts/smoke_test.py
 ```
 
-Verificar Kong con API Key:
+La prueba comprueba lo siguiente:
 
-```powershell
-curl -H "apikey: campusconnect-dev-api-key" http://localhost:8000/academic/students
-```
+- rechazo de peticiones sin API Key;
+- health checks de los cinco servicios;
+- registro de estudiante, deuda, pago, asistencia e incidente;
+- actualización del estado financiero del estudiante a `PAID`;
+- procesamiento de eventos en Analytics;
+- creación de notificaciones;
+- rechazo de un evento inválido y envío a la Dead Letter Queue;
+- idempotencia al publicar dos veces el mismo `eventId`.
 
-## Frontend
+Al terminar muestra un JSON con los identificadores creados y el resultado de cada parte del flujo.
 
-El frontend se construye dentro de Docker con Vite y se sirve con Nginx. React Router funciona al refrescar rutas internas gracias al fallback a `index.html`.
+También está disponible la colección `postman/CampusConnect-360.postman_collection.json` para hacer el recorrido manualmente desde Postman.
 
-Variables usadas en build:
+## Pruebas automáticas
 
-```powershell
-VITE_API_GATEWAY_URL=http://localhost:8000
-VITE_API_KEY=campusconnect-dev-api-key
-```
-
-Importante: las variables `VITE_*` quedan embebidas en el bundle durante el build. Si cambias estos valores, reconstruye el frontend:
-
-```powershell
-docker compose build frontend
-docker compose up -d frontend
-```
-
-## Demo rapida
-
-1. Abre `http://localhost:5173/dashboard`.
-2. Registra un estudiante en `http://localhost:5173/academic/students/new`.
-3. Registra o confirma un pago en `http://localhost:5173/payments`.
-4. Registra asistencia en `http://localhost:5173/wellbeing/attendance/new`.
-5. Registra un incidente en `http://localhost:5173/wellbeing/incidents/new`.
-6. Vuelve al dashboard y actualiza los indicadores.
-
-Las cinco APIs de negocio se consumen mediante Kong. Notifications y Analytics
-tambien requieren el header `apikey`; los puertos directos se conservan para
-Swagger, health checks y diagnostico local.
-
-## Pruebas automatizadas
-
-Contratos de infraestructura y utilidades de demostracion:
+Pruebas de contratos y utilidades del flujo:
 
 ```powershell
 python -m unittest discover -s tests -v
 ```
 
-Frontend:
+Pruebas y build del frontend:
 
 ```powershell
 cd frontend
 npm ci
 npm test
 npm run build
+cd ..
 ```
 
-Consumidores asincronos:
+Pruebas de los consumidores de RabbitMQ:
 
 ```powershell
 cd services/notifications-service
@@ -150,96 +176,60 @@ cd ../analytics-service
 python -m unittest discover -s tests -v
 ```
 
-## Smoke test integral
+El mismo conjunto de validaciones se ejecuta en GitHub Actions cuando se suben cambios al repositorio.
 
-Con el ecosistema levantado y saludable:
+## Qué pasa cuando falla un evento
 
-```powershell
-python scripts/smoke_test.py
-```
+Notifications y Analytics tienen colas separadas. Si uno de estos consumidores recibe un evento inválido, guarda el intento como `FAILED` cuando todavía puede identificar su `eventId`, rechaza el mensaje sin reencolarlo y RabbitMQ lo mueve a `campusconnect.dead-letter.queue`.
 
-El script verifica automaticamente:
-
-- rechazo `401` sin API Key;
-- health checks de los cinco servicios;
-- registro de estudiante, deuda, pago, asistencia e incidente;
-- cuatro eventos procesados por Analytics;
-- tres notificaciones de negocio;
-- actualizacion del estudiante a estado financiero `PAID`;
-- rechazo de un evento invalido y llegada a la Dead Letter Queue;
-- idempotencia al publicar dos veces el mismo `eventId`.
-
-La salida final es un JSON con los identificadores creados y las evidencias del
-flujo. La coleccion `postman/CampusConnect-360.postman_collection.json` ofrece
-el mismo recorrido como respaldo tecnico.
-
-## Escenario de falla controlada
-
-RabbitMQ usa colas separadas por consumidor y un Dead Letter Exchange. Cuando
-un consumidor recibe un evento con forma invalida, registra `FAILED` cuando el
-mensaje conserva un `eventId`, ejecuta `basic_nack(requeue=false)` y RabbitMQ lo
-envia a `campusconnect.dead-letter.queue`. El dashboard separa estos mensajes
-fallidos de los errores de disponibilidad HTTP.
-
-Para inspeccionar la DLQ:
+Puedes revisar las colas con:
 
 ```powershell
 docker exec campusconnect-rabbitmq rabbitmqctl -p campusconnect list_queues name messages consumers
 ```
 
-Si se cambia la topologia de colas sobre una instalacion anterior, recrea solo
-los datos locales de Docker antes de volver a levantar el entorno:
+Si cambias la configuración de RabbitMQ y ya habías levantado una versión anterior, recrea los volúmenes locales para que se aplique la nueva topología:
 
 ```powershell
 docker compose down -v
 docker compose up -d --build
 ```
 
-## Comandos utiles
-
-Levantar todo:
+## Comandos que usamos normalmente
 
 ```powershell
-docker compose up --build
-```
-
-Levantar en segundo plano:
-
-```powershell
+# Levantar o reconstruir todo
 docker compose up -d --build
-```
 
-Detener:
+# Ver el estado de los contenedores
+docker compose ps
 
-```powershell
+# Seguir los logs
+docker compose logs -f
+
+# Detener el proyecto sin borrar los datos
 docker compose down
+
+# Detenerlo y borrar los volúmenes locales
+docker compose down -v
 ```
 
-Reconstruir:
+## Si algo no levanta
+
+Si el frontend abre pero las APIs responden `401`, revisa que `VITE_API_KEY` en tu archivo `.env` sea igual a la clave configurada en Kong.
+
+Si cambiaste alguna variable `VITE_*`, reconstruye el frontend porque Vite agrega esos valores durante el build:
 
 ```powershell
-docker compose build
-docker compose up -d
+docker compose build frontend
+docker compose up -d frontend
 ```
 
-Ver logs:
+Si una página o servicio no responde, empieza revisando su estado y sus logs:
 
 ```powershell
-docker compose logs -f frontend
-docker compose logs -f kong
+docker compose ps
+docker compose logs frontend kong
 ```
 
-## Troubleshooting
-
-Si el frontend carga pero las APIs devuelven `401`, revisa que `VITE_API_KEY` en `.env` coincida con la key de desarrollo declarada en Kong.
-
-Si cambiaste variables `VITE_*`, reconstruye el frontend porque Vite las aplica en tiempo de build.
-
-El Dockerfile del frontend configura `npm strict-ssl=false` durante la etapa de build porque en algunos entornos Docker locales el registry npm presenta una cadena TLS no verificable por la imagen Node. Este ajuste aplica solo al build de desarrollo local.
-
-Si `localhost:5173` no responde, valida:
-
-```powershell
-docker compose ps frontend
-docker compose logs frontend
-```
+El Dockerfile del frontend desactiva `strict-ssl` de npm únicamente durante el build local. Esto evita problemas con certificados del registry en algunos entornos Docker y no cambia la seguridad de las APIs de la plataforma.

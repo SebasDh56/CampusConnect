@@ -1,0 +1,54 @@
+{
+  "actors": {
+    "secretary": {
+      "username": "secretaria.demo",
+      "display_name": "Secretaria Demo",
+      "role": "SECRETARY",
+      "portal": "Academico"
+    },
+    "finance": {
+      "username": "finanzas.demo",
+      "display_name": "Finanzas Demo",
+      "role": "FINANCE",
+      "portal": "Pagos"
+    },
+    "teacher": {
+      "username": "docente.demo",
+      "display_name": "Docente Demo",
+      "role": "TEACHER",
+      "portal": "Bienestar"
+    },
+    "wellbeing": {
+      "username": "bienestar.demo",
+      "display_name": "Bienestar Demo",
+      "role": "WELLBEING",
+      "portal": "Bienestar"
+    }
+  },
+  "student": {
+    "school_id": "SCH-DEMO",
+    "first_name": "Valentina",
+    "last_name": "CampusConnect",
+    "document_number": "DOC-CAMPUS-DEMO-001",
+    "grade": "8vo EGB",
+    "academic_year": "2026-2027",
+    "enrollment_status": "ENROLLED"
+  },
+  "payment": {
+    "invoice_id": "INV-CAMPUS-DEMO-001",
+    "amount": 125.5,
+    "currency": "USD",
+    "payment_method": "TRANSFERENCIA",
+    "payment_status": "PENDING"
+  },
+  "attendance": {
+    "status": "PRESENT",
+    "recorded_by_actor": "teacher"
+  },
+  "incident": {
+    "incident_type": "WELLBEING",
+    "severity": "MEDIUM",
+    "description": "Seguimiento de bienestar para la demostracion funcional.",
+    "reported_by_actor": "wellbeing"
+  }
+}

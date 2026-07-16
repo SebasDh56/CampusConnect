@@ -78,5 +78,15 @@ class RabbitMqContractTests(unittest.TestCase):
         self.assertEqual(bindings, expected)
 
 
+class DemoSeedContractTests(unittest.TestCase):
+    def test_compose_loads_demo_data_through_the_gateway(self) -> None:
+        compose = (ROOT / "docker-compose.yml").read_text(encoding="utf-8")
+
+        self.assertIn("  demo-seed:\n", compose)
+        self.assertIn("python -m scripts.seed_demo", compose)
+        self.assertIn("--gateway http://kong:8000", compose)
+        self.assertIn("./demo:/app/demo:ro", compose)
+
+
 if __name__ == "__main__":
     unittest.main()

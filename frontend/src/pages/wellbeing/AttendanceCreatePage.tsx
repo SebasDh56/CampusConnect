@@ -5,6 +5,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { createAttendance } from "../../api/wellbeingApi";
 import { FormField } from "../../components/FormField";
 import { PageHeader } from "../../components/PageHeader";
+import { StudentSelector } from "../../components/StudentSelector";
+import { attendanceStudentFields } from "../studentFormSelection";
 import type { AttendanceCreate } from "../../types/wellbeing";
 
 type FormErrors = Partial<Record<keyof AttendanceCreate, string>>;
@@ -87,30 +89,22 @@ export function AttendanceCreatePage() {
       {submitError ? <div className="alert error">{submitError}</div> : null}
 
       <form className="form-grid" onSubmit={handleSubmit}>
-        <FormField
-          label="Student ID"
-          name="student_id"
+        <StudentSelector
           value={form.student_id}
-          onChange={handleChange}
+          onSelect={(student) => {
+            setForm((current) => ({ ...current, ...attendanceStudentFields(student) }));
+            setErrors((current) => ({
+              ...current,
+              student_id: undefined,
+              school_id: undefined,
+              grade: undefined,
+            }));
+          }}
           error={errors.student_id}
-          required
         />
-        <FormField
-          label="School ID"
-          name="school_id"
-          value={form.school_id}
-          onChange={handleChange}
-          error={errors.school_id}
-          required
-        />
-        <FormField
-          label="Grado"
-          name="grade"
-          value={form.grade}
-          onChange={handleChange}
-          error={errors.grade}
-          required
-        />
+        <div className="state-message compact">
+          Colegio y grado: {form.school_id && form.grade ? `${form.school_id} - ${form.grade}` : "Sin seleccionar"}
+        </div>
         <FormField
           label="Fecha"
           name="record_date"
