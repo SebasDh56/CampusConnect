@@ -117,7 +117,7 @@ export function DashboardPage() {
 
       <div className="dashboard-meta">
         <span>
-          Ultima actualizacion: {lastUpdatedAt ? lastUpdatedAt.toLocaleString() : "Sin actualizar"}
+          Última actualización: {lastUpdatedAt ? lastUpdatedAt.toLocaleString() : "Sin actualizar"}
         </span>
       </div>
 
@@ -131,13 +131,13 @@ export function DashboardPage() {
       ) : null}
 
       {!isLoading && data?.ecosystemStatus === "NO DISPONIBLE" ? (
-        <div className="alert error">Ninguna fuente principal respondio correctamente.</div>
+        <div className="alert error">Ninguna fuente principal respondió correctamente.</div>
       ) : null}
 
       {!isLoading && !hasAnyData(data) ? (
         <EmptyState
           title="Sin datos disponibles"
-          description="No hay informacion real disponible desde las APIs consultadas."
+          description="No hay información real disponible desde las APIs consultadas."
         />
       ) : null}
 
@@ -150,7 +150,7 @@ export function DashboardPage() {
             <MetricCard label="Asistencias" value={metrics.attendanceCount} helper="Registros capturados" />
             <MetricCard label="Incidentes" value={metrics.incidentsCount} helper="Reportes registrados" />
             <MetricCard label="Eventos procesados" value={metrics.processedEvents} helper="Analytics processed-events" />
-            <MetricCard label="Mensajes fallidos" value={metrics.failedMessages} helper="Eventos unicos con estado FAILED" />
+            <MetricCard label="Mensajes fallidos" value={metrics.failedMessages} helper="Eventos únicos con estado FAILED" />
             <MetricCard label="Notificaciones" value={metrics.notificationsCount} helper="Generadas" />
           </section>
 
@@ -163,7 +163,7 @@ export function DashboardPage() {
             <article className="dashboard-card">
               <h3>Actividad reciente</h3>
               {recentEvents.length === 0 ? (
-                <EmptyState title="Sin eventos" description="No hay eventos analiticos recientes." />
+                <EmptyState title="Sin eventos" description="No hay eventos analíticos recientes." />
               ) : (
                 <div className="activity-list">
                   {recentEvents.map((event) => (

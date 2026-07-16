@@ -86,7 +86,7 @@ export function StudentCreatePage() {
   return (
     <div className="page-panel">
       <PageHeader
-        kicker="Portal Academico"
+        kicker="Portal Académico"
         title="Registrar estudiante"
         description="Crea un estudiante en Academic Service. Al guardar, el backend publicara StudentEnrolled."
       />

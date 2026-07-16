@@ -19,7 +19,7 @@ export function AnalyticsEventsPage() {
         if (isMounted) setEvents(data);
       })
       .catch(() => {
-        if (isMounted) setError("No se pudieron cargar los eventos analiticos.");
+        if (isMounted) setError("No se pudieron cargar los eventos analíticos.");
       })
       .finally(() => {
         if (isMounted) setIsLoading(false);
@@ -34,7 +34,7 @@ export function AnalyticsEventsPage() {
     <div className="page-panel">
       <PageHeader
         kicker="Soporte operativo"
-        title="Eventos analiticos"
+        title="Eventos analíticos"
         description="Proyeccion consolidada de los eventos procesados por Analytics Service."
       />
 
