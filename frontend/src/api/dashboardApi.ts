@@ -14,13 +14,22 @@ import type { AnalyticsEvent, Notification, ProcessedEvent } from "../types/supp
 import type { Attendance, Incident } from "../types/wellbeing";
 
 type SourceResult<T> = {
-  service: ServiceKey;
   fallback: T;
   result: PromiseSettledResult<T>;
 };
 
+type ServiceDefinition = {
+  key: ServiceKey;
+  label: string;
+  results: PromiseSettledResult<unknown>[];
+};
+
 function valueOrFallback<T>({ fallback, result }: SourceResult<T>): T {
   return result.status === "fulfilled" ? result.value : fallback;
+}
+
+function isAvailable(results: PromiseSettledResult<unknown>[]): boolean {
+  return results.every((result) => result.status === "fulfilled");
 }
 
 function errorMessage(result: PromiseSettledResult<unknown>): string | undefined {
@@ -29,6 +38,18 @@ function errorMessage(result: PromiseSettledResult<unknown>): string | undefined
   }
 
   return result.reason instanceof Error ? result.reason.message : "Consulta no disponible.";
+}
+
+function firstError(results: PromiseSettledResult<unknown>[]): string | undefined {
+  for (const result of results) {
+    const message = errorMessage(result);
+
+    if (message) {
+      return message;
+    }
+  }
+
+  return undefined;
 }
 
 function ecosystemStatus(availability: ServiceAvailability[]): EcosystemStatus {
@@ -67,77 +88,80 @@ export async function getDashboardData(): Promise<DashboardData> {
   ]);
 
   const students = valueOrFallback<Student[]>({
-    service: "academic",
     fallback: [],
     result: studentsResult,
   });
   const payments = valueOrFallback<Payment[]>({
-    service: "payments",
     fallback: [],
     result: paymentsResult,
   });
   const attendance = valueOrFallback<Attendance[]>({
-    service: "wellbeing",
     fallback: [],
     result: attendanceResult,
   });
   const incidents = valueOrFallback<Incident[]>({
-    service: "wellbeing",
     fallback: [],
     result: incidentsResult,
   });
   const notifications = valueOrFallback<Notification[]>({
-    service: "notifications",
     fallback: [],
     result: notificationsResult,
   });
   const analyticsEvents = valueOrFallback<AnalyticsEvent[]>({
-    service: "analytics",
     fallback: [],
     result: analyticsEventsResult,
   });
   const analyticsProcessedEvents = valueOrFallback<ProcessedEvent[]>({
-    service: "analytics",
     fallback: [],
     result: analyticsProcessedEventsResult,
   });
   const notificationsProcessedEvents = valueOrFallback<ProcessedEvent[]>({
-    service: "notifications",
     fallback: [],
     result: notificationsProcessedEventsResult,
   });
 
-  const serviceAvailability: ServiceAvailability[] = [
+  const services: ServiceDefinition[] = [
     {
       key: "academic",
       label: "Academic Service",
-      available: studentsResult.status === "fulfilled",
+      results: [studentsResult],
     },
     {
       key: "payments",
       label: "Payments Service",
-      available: paymentsResult.status === "fulfilled",
+      results: [paymentsResult],
     },
     {
       key: "wellbeing",
       label: "Wellbeing Service",
-      available: attendanceResult.status === "fulfilled" && incidentsResult.status === "fulfilled",
+      results: [attendanceResult, incidentsResult],
     },
     {
       key: "notifications",
       label: "Notifications Service",
-      available:
-        notificationsResult.status === "fulfilled" &&
-        notificationsProcessedEventsResult.status === "fulfilled",
+      results: [notificationsResult, notificationsProcessedEventsResult],
     },
     {
       key: "analytics",
       label: "Analytics Service",
-      available:
-        analyticsEventsResult.status === "fulfilled" &&
-        analyticsProcessedEventsResult.status === "fulfilled",
+      results: [analyticsEventsResult, analyticsProcessedEventsResult],
     },
   ];
+
+  const serviceAvailability: ServiceAvailability[] = services.map(({ key, label, results }) => ({
+    key,
+    label,
+    available: isAvailable(results),
+  }));
+
+  const errors = Object.fromEntries(
+    services
+      .map(({ key, results }) => {
+        const message = firstError(results);
+        return message ? [key, message] : undefined;
+      })
+      .filter((entry): entry is [ServiceKey, string] => entry !== undefined),
+  ) as Partial<Record<ServiceKey, string>>;
 
   return {
     students,
@@ -150,13 +174,6 @@ export async function getDashboardData(): Promise<DashboardData> {
     notificationsProcessedEvents,
     serviceAvailability,
     ecosystemStatus: ecosystemStatus(serviceAvailability),
-    errors: {
-      academic: errorMessage(studentsResult),
-      payments: errorMessage(paymentsResult),
-      wellbeing: errorMessage(attendanceResult) ?? errorMessage(incidentsResult),
-      notifications:
-        errorMessage(notificationsResult) ?? errorMessage(notificationsProcessedEventsResult),
-      analytics: errorMessage(analyticsEventsResult) ?? errorMessage(analyticsProcessedEventsResult),
-    },
+    errors,
   };
 }
