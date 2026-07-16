@@ -21,10 +21,15 @@ type FormFieldProps = TextProps | SelectProps;
 export function FormField(props: FormFieldProps) {
   const { label, error } = props;
   const fieldId = props.id ?? props.name;
+  const errorId = error && fieldId ? `${fieldId}-error` : undefined;
+  // Keep helper text and validation feedback discoverable from the same field.
+  const describedBy = [props["aria-describedby"], errorId].filter(Boolean).join(" ") || undefined;
 
   return (
-    <label className="form-field" htmlFor={fieldId}>
-      <span>{label}</span>
+    <div className="form-field">
+      <label htmlFor={fieldId}>
+        <span>{label}</span>
+      </label>
       {props.as === "select" ? (
         <select
           id={fieldId}
@@ -33,6 +38,8 @@ export function FormField(props: FormFieldProps) {
           onChange={props.onChange as (event: ChangeEvent<HTMLSelectElement>) => void}
           disabled={props.disabled}
           required={props.required}
+          aria-describedby={describedBy}
+          aria-invalid={error ? true : undefined}
         >
           {props.options.map((option) => (
             <option key={option.value} value={option.value}>
@@ -49,9 +56,15 @@ export function FormField(props: FormFieldProps) {
           required={props.required}
           placeholder={props.placeholder}
           type={props.type ?? "text"}
+          aria-describedby={describedBy}
+          aria-invalid={error ? true : undefined}
         />
       )}
-      {error ? <small className="field-error">{error}</small> : null}
-    </label>
+      {error ? (
+        <small className="field-error" id={errorId}>
+          {error}
+        </small>
+      ) : null}
+    </div>
   );
 }
