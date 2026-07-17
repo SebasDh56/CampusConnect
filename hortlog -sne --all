@@ -1,0 +1,29 @@
+97d6cd0 | 2026-07-16 | Justxt/Kahiv <jussxtn@gmail.com> | fix: agiliza la primera respuesta de Kong
+e3171a0 | 2026-07-16 | Juan Esteban Gallardo Alava <75323396+Juangallardo-rgb@users.noreply.github.com> | Logo campus-connect en topbar del sistema
+712cf4d | 2026-07-16 | Juan Esteban Gallardo Alava <75323396+Juangallardo-rgb@users.noreply.github.com> | Ejecución y validación de pruebas al código, 10/10 python
+6e80d49 | 2026-07-16 | Justxt <jussxtn@gmail.com> | Merge pull request #6 from SebasDh56/feat/dashboard-service-aggregation-refactor
+32c08eb | 2026-07-16 | Justxt <jussxtn@gmail.com> | Merge pull request #5 from SebasDh56/feature/mejora-textos-lenin
+9af7d56 | 2026-07-16 | Romsesito <graphicsrom@gmail.com> | test: cover dashboard ecosystem states
+0592cca | 2026-07-16 | Romsesito <graphicsrom@gmail.com> | refactor: centralize dashboard service aggregation
+8f42311 | 2026-07-16 | Lenin Cando <lenincando03@gmail.com> | fix(ui): mejorar textos y configuración de idioma
+b644d83 | 2026-07-16 | Justxt/Kahiv <jussxtn@gmail.com> | Merge branch 'develop'
+8e118f1 | 2026-07-16 | Justxt/Kahiv <jussxtn@gmail.com> | feat: completa los flujos de CampusConnect
+1ec99d1 | 2026-07-16 | Amable Sebastian Quishpe <105821062+SebasDh56@users.noreply.github.com> | Merge pull request #1 from SebasDh56/feature/progreso-3-completion
+3cc1e2b | 2026-07-16 | Amable Sebastian Quishpe <105821062+SebasDh56@users.noreply.github.com> | Merge pull request #2 from SebasDh56/develop
+1f3629a | 2026-07-15 | Justxt/Kahiv <jussxtn@gmail.com> | ci: validate every pushed branch
+464b379 | 2026-07-15 | Justxt/Kahiv <jussxtn@gmail.com> | feat: complete Progreso 3 integration
+ba16e5b | 2026-07-15 | Justxt/Kahiv <jussxtn@gmail.com> | chore: prepare isolated worktrees
+cd7c84b | 2026-07-10 | Amable Sebastian Quishpe <105821062+SebasDh56@users.noreply.github.com> | ...sfs
+f176b02 | 2026-07-10 | Amable Sebastian Quishpe <105821062+SebasDh56@users.noreply.github.com> | ...
+b606cbd | 2026-07-10 | Amable Sebastian Quishpe <105821062+SebasDh56@users.noreply.github.com> | Fase 6: Segurirad Apy key
+6081eee | 2026-07-09 | Amable Sebastian Quishpe <105821062+SebasDh56@users.noreply.github.com> | Fase 6 Depurar Front
+f791b8b | 2026-07-09 | Amable Sebastian Quishpe <105821062+SebasDh56@users.noreply.github.com> | FASE 5 : Front
+4ff795a | 2026-07-09 | Amable Sebastian Quishpe <105821062+SebasDh56@users.noreply.github.com> | FASE  4:  notifications event consumer
+64a1559 | 2026-07-08 | Amable Sebastian Quishpe <105821062+SebasDh56@users.noreply.github.com> | fase  3:  RabbitMQ
+f75be8d | 2026-07-08 | Amable Sebastian Quishpe <105821062+SebasDh56@users.noreply.github.com> | fase 3: complete CRUD services and audit
+abe8241 | 2026-07-08 | Amable Sebastian Quishpe <105821062+SebasDh56@users.noreply.github.com> | fase  2.2: payments service CRUD
+6fed64d | 2026-07-08 | Amable Sebastian Quishpe <105821062+SebasDh56@users.noreply.github.com> | fASE 2 : sERVICES
+4f7e2f3 | 2026-07-07 | Amable Sebastian Quishpe <105821062+SebasDh56@users.noreply.github.com> | Phase 1: complete infrastructure baseline
+d0c9e5e | 2026-07-07 | Amable Sebastian Quishpe <105821062+SebasDh56@users.noreply.github.com> | Phase 1: add academic service base
+e92552a | 2026-07-07 | Amable Sebastian Quishpe <105821062+SebasDh56@users.noreply.github.com> | Phase 1: Initial project structure
+f064a17 | 2026-07-07 | Amable Sebastian Quishpe <105821062+SebasDh56@users.noreply.github.com> | Initial commit: add README
