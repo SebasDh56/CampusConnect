@@ -9,6 +9,7 @@ ROOT = Path(__file__).resolve().parents[1]
 class GatewayContractTests(unittest.TestCase):
     def setUp(self) -> None:
         self.config = (ROOT / "infrastructure" / "gateway" / "kong.yml").read_text(encoding="utf-8")
+        self.compose = (ROOT / "docker-compose.yml").read_text(encoding="utf-8")
 
     def test_all_business_services_are_exposed_by_kong(self) -> None:
         expected = {
@@ -26,6 +27,9 @@ class GatewayContractTests(unittest.TestCase):
 
         self.assertEqual(self.config.count("  - name: cors\n"), 5)
         self.assertEqual(self.config.count("  - name: key-auth\n"), 5)
+
+    def test_kong_resolves_docker_services_with_a_records_first(self) -> None:
+        self.assertIn('KONG_DNS_ORDER: "A,CNAME"', self.compose)
 
 
 class RabbitMqContractTests(unittest.TestCase):
